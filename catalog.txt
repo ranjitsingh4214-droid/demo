@@ -1,0 +1,227 @@
+# title|artist|lang|year|energy(1-10)|bpm(approx)|tags
+Kala Chashma|Badshah, Neha Kakkar|hi|2016|9|112|dance,wedding,singalong
+London Thumakda|Labh Janjua, Sonu Kakkar, Neha Kakkar|hi|2014|9|108|dance,wedding,bhangra
+Badtameez Dil|Benny Dayal|hi|2013|9|128|dance,singalong
+Balam Pichkari|Vishal Dadlani, Shalmali Kholgade|hi|2013|8|120|dance,holi,singalong
+Gallan Goodiyaan|Yashita Sharma, Manish Kumar Tipu, Farhan Akhtar|hi|2015|9|110|dance,wedding
+Nashe Si Chadh Gayi|Arijit Singh|hi|2016|7|105|dance
+Ghungroo|Arijit Singh, Shilpa Rao|hi|2019|7|100|dance
+Malhari|Vishal Dadlani|hi|2015|10|135|dance,festive
+Swag Se Swagat|Vishal Dadlani, Neha Bhasin|hi|2017|8|115|dance
+Dilbar|Neha Kakkar, Dhvani Bhanushali, Ikka|hi|2018|8|105|dance
+Aankh Marey|Neha Kakkar, Mika Singh, Kumar Sanu|hi|2018|9|118|dance,retro-remix
+Tamma Tamma Again|Badshah, Bappi Lahiri, Anuradha Paudwal|hi|2017|9|120|dance,retro-remix
+The Breakup Song|Arijit Singh, Badshah, Jonita Gandhi, Nakash Aziz|hi|2016|8|120|dance,singalong
+Kar Gayi Chull|Badshah, Neha Kakkar|hi|2016|9|118|dance
+Abhi Toh Party Shuru Hui Hai|Badshah, Aastha Gill|hi|2014|9|125|dance
+DJ Waley Babu|Badshah, Aastha Gill|hi|2015|8|110|dance
+Genda Phool|Badshah, Payal Dev|hi|2020|8|100|dance,holi
+Paani Paani|Badshah, Aastha Gill|hi|2021|8|105|dance
+Jugnu|Badshah, Nikhita Gandhi|hi|2021|7|100|dance
+Jhoome Jo Pathaan|Arijit Singh, Sukriti Kakar|hi|2023|9|126|dance
+Zinda Banda|Anirudh Ravichander|hi|2023|9|128|dance
+Chaleya|Arijit Singh, Shilpa Rao|hi|2023|6|96|romantic
+What Jhumka|Arijit Singh, Jonita Gandhi|hi|2023|8|115|dance,wedding
+Aaj Ki Raat|Madhubanti Bagchi, Divya Kumar|hi|2024|8|110|dance
+Sheila Ki Jawani|Sunidhi Chauhan, Vishal Dadlani|hi|2010|9|125|dance,singalong
+Munni Badnaam Hui|Mamta Sharma, Aishwarya Nigam|hi|2010|9|120|dance,singalong
+Chammak Challo|Akon, Hamsika Iyer|hi|2011|8|115|dance
+Desi Girl|Shankar Mahadevan, Sunidhi Chauhan, Vishal Dadlani|hi|2008|8|125|dance
+Dance Pe Chance|Sunidhi Chauhan, Labh Janjua|hi|2008|8|128|dance
+Ainvayi Ainvayi|Salim Merchant, Sunidhi Chauhan|hi|2010|8|125|dance,wedding
+Chikni Chameli|Shreya Ghoshal|hi|2012|9|130|dance
+Tune Maari Entriyaan|KK, Neeti Mohan, Vishal Dadlani, Bappi Lahiri|hi|2014|9|128|dance,singalong
+Lungi Dance|Yo Yo Honey Singh|hi|2013|9|105|dance,singalong
+Party All Night|Yo Yo Honey Singh|hi|2013|9|128|dance
+Blue Eyes|Yo Yo Honey Singh|hi|2013|8|100|dance
+Sunny Sunny|Yo Yo Honey Singh, Neha Kakkar|hi|2014|8|115|dance
+Dhating Naach|Nakash Aziz, Neha Bhasin|hi|2014|9|125|dance
+Gandi Baat|Mika Singh, Ritu Pathak|hi|2013|9|128|dance
+Saturday Saturday|Badshah, Indeep Bakshi|hi|2014|8|115|dance
+Gal Ban Gayi|Sukhbir, Neha Kakkar, Yo Yo Honey Singh, Meet Bros|hi|2016|9|110|dance,wedding,bhangra
+Hauli Hauli|Garry Sandhu, Neha Kakkar|hi|2018|8|110|dance,wedding
+Morni Banke|Guru Randhawa, Neha Kakkar|hi|2018|8|110|dance,wedding
+Muqabla|Yash Narvekar, Parampara Thakur|hi|2020|9|128|dance,retro-remix
+Players|Badshah, Karan Aujla|hi|2024|8|100|dance,hiphop
+Sauda Khara Khara|Diljit Dosanjh, Dhvani Bhanushali, Sukhbir|hi|2019|9|110|dance,wedding,bhangra
+Nachde Ne Saare|Jasleen Royal, Harshdeep Kaur, Siddharth Mahadevan|hi|2015|9|105|wedding,bhangra
+Bom Diggy Diggy|Zack Knight, Jasmin Walia|hi|2018|8|100|dance
+Tareefan|Badshah, Qaran, Lisa Mishra|hi|2018|8|105|dance
+Sweetheart|Dev Negi|hi|2018|9|115|wedding,dance
+Laila Main Laila|Pawni Pandey|hi|2017|8|110|dance
+Dil Chori|Yo Yo Honey Singh, Simar Kaur, Ishers|hi|2018|9|105|dance,bhangra
+Makhna|Yo Yo Honey Singh, Neha Kakkar|hi|2019|8|100|dance
+Nadiyon Paar|Shamur, Rashmeet Kaur|hi|2021|9|120|dance,wedding
+Garmi|Badshah, Neha Kakkar|hi|2020|9|110|dance
+O Saki Saki|Neha Kakkar, Tulsi Kumar, B Praak|hi|2019|9|112|dance,retro-remix
+Bhool Bhulaiyaa 2 Title Track|Neeraj Shridhar, Pritam|hi|2022|9|125|dance,singalong
+Lut Putt Gaya|Arijit Singh|hi|2023|7|105|dance,romantic
+Senorita|Farhan Akhtar, Hrithik Roshan, Abhay Deol|hi|2011|7|110|singalong
+Ude Dil Befikre|Benny Dayal|hi|2016|8|120|dance
+Hookah Bar|Himesh Reshammiya, Vineet Singh, Aman Trikha|hi|2012|9|128|dance
+Character Dheela|Neeraj Shridhar, Amrita Kak|hi|2011|8|115|dance
+Dhoom Machale|Sunidhi Chauhan|hi|2004|9|130|dance,singalong
+Crazy Kiya Re|Sunidhi Chauhan|hi|2006|8|120|dance
+Beedi|Sukhwinder Singh, Sunidhi Chauhan|hi|2006|9|120|dance
+Nach Punjaban|Gippy Grewal, Zahrah S Khan, Tanishk Bagchi|hi|2022|9|110|wedding,bhangra
+Rangisari|Kanishk Seth, Kavya Limaye|hi|2022|7|100|wedding,holi
+Kudmayi|Shahid Mallya|hi|2023|5|90|wedding,romantic
+Kesariya|Arijit Singh|hi|2022|5|94|romantic,singalong
+Raataan Lambiyan|Jubin Nautiyal, Asees Kaur|hi|2021|5|95|romantic,singalong
+Tum Hi Ho|Arijit Singh|hi|2013|3|94|romantic,chill
+Channa Mereya|Arijit Singh|hi|2016|3|85|romantic,chill
+Apna Bana Le|Arijit Singh|hi|2022|4|90|romantic,chill
+Ae Dil Hai Mushkil|Arijit Singh|hi|2016|4|95|romantic,chill
+Kun Faya Kun|A.R. Rahman, Javed Ali, Mohit Chauhan|hi|2011|3|80|sufi,chill
+Tauba Tauba|Karan Aujla|pa|2024|8|105|dance,bhangra
+Softly|Karan Aujla|pa|2023|7|100|dance
+Wavy|Karan Aujla|pa|2024|7|95|dance
+52 Bars|Karan Aujla, Ikky|pa|2022|7|90|hiphop
+Admirin You|Karan Aujla, Ikky|pa|2023|6|100|romantic
+Brown Munde|AP Dhillon, Gurinder Gill, Shinda Kahlon|pa|2020|8|95|dance,hiphop
+Excuses|AP Dhillon, Gurinder Gill|pa|2020|6|95|romantic,chill
+Summer High|AP Dhillon|pa|2022|7|110|dance
+With You|AP Dhillon|pa|2023|5|85|romantic,chill
+Insane|AP Dhillon, Gurinder Gill, Shinda Kahlon|pa|2021|7|100|dance
+Lover|Diljit Dosanjh|pa|2021|7|100|romantic,dance
+Born To Shine|Diljit Dosanjh|pa|2020|7|95|dance
+G.O.A.T.|Diljit Dosanjh|pa|2020|8|100|dance,hiphop
+Do You Know|Diljit Dosanjh|pa|2016|6|95|romantic
+Patiala Peg|Diljit Dosanjh|pa|2016|9|108|bhangra,dance
+5 Taara|Diljit Dosanjh|pa|2015|8|105|bhangra,dance
+Laembadgini|Diljit Dosanjh|pa|2014|9|110|bhangra,dance
+Proper Patola|Diljit Dosanjh, Badshah|pa|2014|9|110|bhangra,dance
+Naina|Diljit Dosanjh, Badshah|pa|2024|7|100|dance
+So High|Sidhu Moose Wala|pa|2017|7|90|hiphop
+295|Sidhu Moose Wala|pa|2021|7|95|hiphop
+The Last Ride|Sidhu Moose Wala|pa|2022|6|90|hiphop
+Same Beef|Bohemia, Sidhu Moose Wala|pa|2019|8|95|hiphop
+Bambiha Bole|Amrit Maan, Sidhu Moose Wala|pa|2020|8|100|bhangra,hiphop
+Jatt Da Muqabala|Sidhu Moose Wala|pa|2018|8|95|bhangra
+High Rated Gabru|Guru Randhawa|pa|2017|9|105|dance,bhangra
+Lahore|Guru Randhawa|pa|2017|8|100|dance
+Suit Suit|Guru Randhawa, Arjun|pa|2017|8|100|dance,wedding
+Made In India|Guru Randhawa|pa|2018|7|100|dance
+Patola|Guru Randhawa, Bohemia|pa|2015|8|98|dance
+Lamberghini|The Doorbeen, Ragini|pa|2018|9|105|wedding,bhangra,singalong
+Daru Badnaam|Kamal Kahlon, Param Singh|pa|2017|8|100|bhangra,dance
+Coka|Sukh-E Muzical Doctorz, Jaani|pa|2019|8|100|dance
+Illegal Weapon|Jasmine Sandlas, Garry Sandhu|pa|2017|9|105|bhangra,dance
+Kya Baat Ay|Harrdy Sandhu|pa|2018|8|100|dance
+Bijlee Bijlee|Harrdy Sandhu|pa|2021|8|105|dance
+Naah|Harrdy Sandhu|pa|2017|8|102|dance
+Jaguar|Muzical Doctorz Sukhe, Bohemia|pa|2017|8|100|dance,hiphop
+Mi Amor|Sharn, 40K, The Paul|pa|2022|6|95|romantic,chill
+Obsessed|Riar Saab, Abhijay Sharma|pa|2024|6|95|romantic
+Laung Laachi|Mannat Noor|pa|2018|6|90|wedding,romantic
+Angreji Beat|Gippy Grewal, Yo Yo Honey Singh|pa|2011|9|110|bhangra,dance
+Brown Rang|Yo Yo Honey Singh|pa|2011|8|100|dance
+Ishq Tera Tadpave|Sukhbir|pa|1998|10|120|bhangra,retro,wedding
+Tunak Tunak Tun|Daler Mehndi|pa|1998|10|125|bhangra,retro,singalong
+Bolo Ta Ra Ra|Daler Mehndi|pa|1995|10|125|bhangra,retro
+Mundian To Bach Ke|Panjabi MC|pa|2003|10|100|bhangra,retro
+Disco Deewane|Nazia Hassan|hi|1981|8|120|retro,dance
+Jimmy Jimmy Aaja|Parvati Khan|hi|1982|7|125|retro,dance
+Yamma Yamma|Mohammed Rafi, R.D. Burman|hi|1980|7|120|retro
+Piya Tu Ab To Aaja|Asha Bhosle|hi|1971|8|125|retro,dance
+Dum Maro Dum|Asha Bhosle|hi|1971|7|110|retro
+Mehbooba Mehbooba|R.D. Burman|hi|1975|7|110|retro
+Ek Do Teen|Alka Yagnik|hi|1988|8|120|retro,dance
+Choli Ke Peeche|Alka Yagnik, Ila Arun|hi|1993|8|115|retro
+Tu Cheez Badi Hai Mast Mast|Udit Narayan, Kavita Krishnamurthy|hi|1994|8|115|retro,singalong
+Chaiyya Chaiyya|Sukhwinder Singh, Sapna Awasthi|hi|1998|9|110|retro,singalong
+Kajra Re|Alisha Chinai, Shankar Mahadevan, Javed Ali|hi|2005|8|110|retro,dance
+Its The Time To Disco|KK, Vasundhara Das, Shaan, Loy Mendonsa|hi|2003|8|125|retro,dance
+Koi Kahe Kehta Rahe|Shankar Mahadevan, KK, Shaan|hi|2001|8|125|retro,singalong
+Bole Chudiyan|Kavita Krishnamurthy, Sonu Nigam, Alka Yagnik, Udit Narayan|hi|2001|7|105|retro,wedding
+Say Shava Shava|Sunidhi Chauhan, Udit Narayan, Alka Yagnik, Sudesh Bhosle|hi|2001|8|110|retro,wedding,bhangra
+Mehndi Laga Ke Rakhna|Lata Mangeshkar, Udit Narayan|hi|1995|6|100|retro,wedding
+Maahi Ve|Udit Narayan, Sonu Nigam, Alka Yagnik, Shankar Mahadevan|hi|2003|7|105|retro,wedding
+Nagada Sang Dhol|Shreya Ghoshal, Osman Mir|hi|2013|9|130|garba,festive
+Dholida|Janhvi Shrimankar, Kumar Gandharv|hi|2022|8|125|garba,festive
+Chogada|Darshan Raval, Asees Kaur|hi|2018|8|120|garba,festive
+Shubhaarambh|Shruti Pathak, Divya Kumar|hi|2013|7|110|garba,festive,wedding
+Udi Udi Jaye|Sukhwinder Singh, Bhoomi Trivedi, Karsan Sagathia|hi|2017|8|125|garba,festive
+Dholi Taro Dhol Baaje|Kavita Krishnamurthy, Vinod Rathod, Karsan Sagathia|hi|1999|8|125|garba,festive,retro
+Maine Payal Hai Chhankai|Falguni Pathak|gu|1999|7|120|garba,retro
+Deva Shree Ganesha|Ajay Gogavale|hi|2012|9|120|ganpati,festive
+Morya Re|Shankar Mahadevan|hi|2006|9|120|ganpati,festive
+Gajanana|Sukhwinder Singh|hi|2015|8|110|ganpati,festive
+Zingaat|Ajay-Atul|mr|2016|10|135|dance,wedding,singalong
+Shantabai|Sanjay Londhe|mr|2016|9|125|dance
+Kombdi Palali|Anand Shinde, Vaishali Samant|mr|2006|9|130|dance,retro
+Aika Dajiba|Vaishali Samant|mr|2004|8|120|dance,retro
+Wajle Ki Bara|Bela Shende|mr|2010|7|115|lavani
+Apsara Aali|Bela Shende|mr|2010|6|105|lavani
+Chandra|Shreya Ghoshal|mr|2022|7|110|lavani,dance
+Baharla Ha Madhumas|Ajay Gogavale, Shreya Ghoshal|mr|2023|7|110|wedding
+Sairat Zaala Ji|Ajay-Atul, Chinmayi|mr|2016|5|95|romantic
+Yad Lagla|Ajay-Atul|mr|2016|4|85|romantic,chill
+Gulabi Saadi|Sanju Rathod|mr|2024|8|105|dance,wedding
+Lallati Bhandar|Ajay Gogavale|mr|2010|8|120|festive
+Mauli Mauli|Ajay-Atul|mr|2014|8|115|festive,ganpati
+Naatu Naatu|Rahul Sipligunj, Kaala Bhairava|te|2022|10|140|dance,singalong
+Why This Kolaveri Di|Dhanush|ta|2011|7|100|singalong
+Arabic Kuthu|Anirudh Ravichander, Jonita Gandhi|ta|2022|9|120|dance,kuthu
+Vaathi Coming|Anirudh Ravichander|ta|2021|9|125|dance,kuthu
+Rowdy Baby|Dhanush, Dhee|ta|2018|9|125|dance,kuthu
+Kaavaalaa|Shilpa Rao, Anirudh Ravichander|ta|2023|8|120|dance
+Hukum|Anirudh Ravichander|ta|2023|9|130|dance,mass
+Aalaporaan Thamizhan|A.R. Rahman, Kailash Kher|ta|2017|8|125|dance,mass
+Appadi Podu|KK, Anuradha Sriram|ta|2004|9|130|dance,kuthu,retro
+Butta Bomma|Armaan Malik|te|2020|6|100|romantic,singalong
+Ramuloo Ramulaa|Anurag Kulkarni, Mangli|te|2020|8|120|dance,mass
+Oo Antava|Indravathi Chauhan|te|2021|8|110|dance
+Srivalli|Sid Sriram|te|2021|6|95|romantic
+Saami Saami|Mounika Yadav|te|2021|8|115|dance
+Kurchi Madathapetti|Sahithi Chaganti, Sri Krishna|te|2024|9|135|dance,mass
+Ringa Ringa|Priya Hemesh, Devi Sri Prasad|te|2009|9|130|dance,mass,retro
+Jimikki Kammal|Vineeth Sreenivasan, Ranjith Unni|ml|2017|8|125|dance,singalong
+Uptown Funk|Mark Ronson, Bruno Mars|en|2014|9|115|dance,singalong
+Blinding Lights|The Weeknd|en|2019|8|171|dance,pop
+Levitating|Dua Lipa|en|2020|8|103|dance,pop
+Dont Start Now|Dua Lipa|en|2019|8|124|dance,pop
+Shape of You|Ed Sheeran|en|2017|7|96|pop,singalong
+Despacito|Luis Fonsi, Daddy Yankee|en|2017|8|89|dance,singalong
+Taki Taki|DJ Snake, Selena Gomez, Ozuna, Cardi B|en|2018|8|96|dance
+Lean On|Major Lazer, DJ Snake, MO|en|2015|8|98|edm
+Titanium|David Guetta, Sia|en|2011|8|126|edm,singalong
+Animals|Martin Garrix|en|2013|10|128|edm
+Wake Me Up|Avicii|en|2013|8|124|edm,singalong
+Levels|Avicii|en|2011|9|126|edm
+Dont You Worry Child|Swedish House Mafia|en|2012|8|129|edm,singalong
+Turn Down for What|DJ Snake, Lil Jon|en|2013|10|100|edm,hiphop
+Gasolina|Daddy Yankee|en|2004|9|96|dance,retro
+One Dance|Drake, Wizkid, Kyla|en|2016|6|104|chill,pop
+Starboy|The Weeknd, Daft Punk|en|2016|7|186|pop
+Party Rock Anthem|LMFAO|en|2011|10|130|dance,edm
+Timber|Pitbull, Kesha|en|2013|9|130|dance
+Give Me Everything|Pitbull, Ne-Yo|en|2011|9|129|dance
+Yeah!|Usher, Lil Jon, Ludacris|en|2004|9|105|hiphop,retro
+In Da Club|50 Cent|en|2003|8|90|hiphop,retro
+Calm Down|Rema, Selena Gomez|en|2022|6|107|chill,pop
+Espresso|Sabrina Carpenter|en|2024|7|104|pop
+APT.|ROSE, Bruno Mars|en|2024|8|149|pop,singalong
+Die With A Smile|Lady Gaga, Bruno Mars|en|2024|4|79|romantic,chill
+Perfect|Ed Sheeran|en|2017|3|95|romantic,chill
+Mr. Brightside|The Killers|en|2004|9|148|singalong,retro
+Dancing Queen|ABBA|en|1976|8|101|retro,singalong
+September|Earth, Wind & Fire|en|1978|8|126|retro,dance
+Billie Jean|Michael Jackson|en|1983|8|117|retro,dance
+SICKO MODE|Travis Scott|en|2018|8|155|hiphop
+HUMBLE.|Kendrick Lamar|en|2017|8|150|hiphop
+Not Like Us|Kendrick Lamar|en|2024|8|101|hiphop
+Cheap Thrills|Sia|en|2016|8|90|dance,pop
+Closer|The Chainsmokers, Halsey|en|2016|6|95|pop,chill
+Faded|Alan Walker|en|2015|6|90|edm,chill
+Heat Waves|Glass Animals|en|2020|6|81|chill,pop
+Beggin|Maneskin|en|2021|8|134|dance,singalong
+Mere Gully Mein|DIVINE, Naezy|hi|2015|7|95|hiphop
+Apna Time Aayega|Ranveer Singh, DIVINE|hi|2019|8|90|hiphop,singalong
+Mirchi|DIVINE, MC Altaf, Stylo G|hi|2021|8|100|hiphop
+Kaam 25|DIVINE|hi|2019|7|90|hiphop
+Machayenge|Emiway Bantai|hi|2019|8|100|hiphop
+Basti Ka Hasti|MC Stan|hi|2022|7|90|hiphop
+52 Gaj Ka Daman|Renuka Panwar|hr|2020|9|115|dance
+Teri Aankhya Ka Yo Kajal|Sapna Choudhary|hr|2017|9|110|dance
+Lollypop Lagelu|Pawan Singh|bh|2008|9|120|dance

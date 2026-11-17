@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HOOKD · Party sets that hit from the hook</title>
+<meta name="description" content="Tell HOOKD the party. It builds a set that rises and falls like a real DJ night, starts every song at the part people replay most, and learns from every skip.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0a10;--panel:#15131d;--panel2:#1d1a28;--line:#2b2738;--ink:#f4f1ff;--mute:#9a93b3;
+  --hot:#ff3d6e;--lime:#c6ff3d;--cyan:#3de0ff;--amber:#ffb23d;
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;min-height:100%}
+body{min-height:100dvh;overflow-x:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input{font:inherit;color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 18px 60px}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Archivo Black";letter-spacing:.02em;font-size:22px}
+.brand i{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--hot);box-shadow:0 0 18px var(--hot)}
+.brand small{font-family:"Space Grotesk";font-weight:500;font-size:12px;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;margin-left:6px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+.ghost{border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:13px;color:var(--mute)}
+.ghost:hover{color:var(--ink);border-color:var(--mute)}
+
+/* ---------- setup ---------- */
+.hero h1{font-family:"Archivo Black";font-size:clamp(38px,7vw,78px);line-height:.95;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:var(--hot)}
+.hero p{color:var(--mute);max-width:560px;margin:14px 0 28px;font-size:17px;line-height:1.5}
+.grid{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.q{margin-bottom:20px}
+.q:last-child{margin-bottom:0}
+.q h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:10px;font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--panel2);padding:9px 13px;border-radius:12px;font-size:14px;text-align:left;transition:.15s}
+.chip small{display:block;color:var(--mute);font-size:11px;margin-top:2px}
+.chip:hover{border-color:#4a4460}
+.chip.on{background:var(--ink);color:#120f19;border-color:var(--ink)}
+.chip.on small{color:#4b4560}
+.slider{width:100%;accent-color:var(--hot)}
+.sl-lab{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;margin-top:4px}
+.arcbox h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:500}
+.arcbox .big{font-family:"Archivo Black";font-size:26px;margin:6px 0 2px}
+.arcbox p{color:var(--mute);font-size:13px;line-height:1.45}
+svg.arc{width:100%;height:auto;display:block;margin:14px 0 6px}
+.cta{width:100%;margin-top:16px;background:var(--hot);color:#fff;font-family:"Archivo Black";font-size:20px;letter-spacing:.03em;padding:18px;border-radius:14px;box-shadow:0 10px 40px -10px var(--hot);transition:transform .1s}
+.cta:active{transform:scale(.98)}
+.stats{display:flex;gap:16px;margin-top:14px;color:var(--mute);font-size:12px;flex-wrap:wrap}
+.stats b{color:var(--ink);font-size:16px;display:block}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
+@media(max-width:700px){.how{grid-template-columns:1fr}}
+.how div{border-top:2px solid var(--line);padding-top:10px;font-size:13px;color:var(--mute);line-height:1.45}
+.how b{color:var(--ink);display:block;margin-bottom:4px;font-size:14px}
+
+/* ---------- player ---------- */
+#player{display:none}
+.stage{display:grid;grid-template-columns:1.35fr 1fr;gap:18px}
+@media(max-width:900px){.stage{grid-template-columns:1fr}}
+.screen{position:relative;aspect-ratio:16/9;border-radius:var(--r);overflow:hidden;background:#000;border:1px solid var(--line)}
+.screen .yt{position:absolute;inset:0;transition:opacity 1.2s ease}
+.screen .yt iframe{width:100%;height:100%;display:block}
+.screen .veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 55%,rgba(11,10,16,.85))}
+.np{position:absolute;left:16px;right:16px;bottom:12px;pointer-events:none}
+.badge{width:fit-content;gap:6px;align-items:center;background:rgba(11,10,16,.75);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px}
+.np .t{font-family:"Archivo Black";font-size:clamp(20px,3.2vw,34px);line-height:1.05;text-shadow:0 2px 20px #000}
+.np .a{color:#d6d0ea;font-size:14px;margin-top:4px}
+.badge{position:relative;display:inline-flex;margin-bottom:8px;background:rgba(11,10,16,.75);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:12px;display:flex;gap:6px;align-items:center}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime)}
+.status{position:absolute;top:12px;right:12px;font-size:12px;color:var(--mute);background:rgba(11,10,16,.75);border-radius:999px;padding:6px 11px;max-width:60%;text-align:right}
+.status:empty{display:none}
+.startover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(circle at 50% 40%,#2a0f1d,#0b0a10 70%);z-index:5;text-align:center;padding:20px}
+.startover h2{font-family:"Archivo Black";font-size:clamp(26px,4vw,42px)}
+.startover p{color:var(--mute);font-size:14px;max-width:360px}
+.startover .cta{width:auto;padding:16px 34px}
+
+.hookcard{margin-top:12px}
+.hookhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-size:12px;color:var(--mute)}
+.hookhead b{color:var(--ink);font-weight:500}
+canvas#curve{width:100%;height:70px;display:block;cursor:crosshair;touch-action:none;border-radius:10px;background:var(--panel2)}
+.ctrls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.ctrls button{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 6px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.ctrls button span{font-size:20px;line-height:1}
+.ctrls button:hover{border-color:#4a4460}
+.ctrls button.on{border-color:var(--lime);color:var(--lime)}
+.ctrls button.liked{border-color:var(--hot);color:var(--hot)}
+.retune{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.retune button{border-radius:12px;padding:12px;font-weight:700;font-size:14px}
+.retune .up{background:linear-gradient(90deg,#ff3d6e,#ff7a3d);color:#fff}
+.retune .down{background:var(--panel2);border:1px solid var(--line)}
+.side h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);font-weight:500;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.side h3 button{letter-spacing:0;text-transform:none;font-size:12px;color:var(--cyan)}
+.q-item{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.q-item:last-child{border-bottom:0}
+.q-item .n{font-family:"Archivo Black";color:var(--mute);font-size:13px}
+.q-item .tt{font-weight:700;font-size:14px;line-height:1.2}
+.q-item .aa{color:var(--mute);font-size:12px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.why{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.why span{font-size:10.5px;padding:2px 7px;border-radius:999px;background:#241f33;color:#c9c2e0}
+.why span.e{background:#3a1424;color:#ff9db7}
+.q-item .x{color:var(--mute);font-size:18px;padding:4px 6px}
+.q-item .x:hover{color:var(--hot)}
+.ebar{width:6px;height:34px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.ebar i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,var(--cyan),var(--hot))}
+.mini-arc{margin-top:16px}
+.played{max-height:200px;overflow:auto;font-size:13px;color:var(--mute);line-height:1.7}
+.played b{color:var(--ink);font-weight:500}
+
+/* sheet */
+.sheet{position:fixed;inset:0;background:rgba(5,4,8,.7);backdrop-filter:blur(4px);display:none;z-index:50;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.sheet .box{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:80dvh;display:flex;flex-direction:column;padding:16px}
+.sheet input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;font-size:16px;outline:none}
+.sheet input:focus{border-color:var(--hot)}
+.results{overflow:auto;margin-top:10px}
+.res{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.res:hover{background:var(--panel2)}
+.res small{color:var(--mute);display:block;font-size:12px}
+.res em{font-style:normal;font-size:12px;color:var(--cyan);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--ink);color:#120f19;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;transition:.25s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.foot{margin-top:28px;color:var(--mute);font-size:12px;line-height:1.6}
+.foot a{color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><i></i>HOOKD<small>auto-DJ</small></div>
+    <button class="ghost" id="resetTaste" title="Clear what HOOKD has learned on this device">Reset taste</button>
+  </header>
+
+  <!-- ================= SETUP ================= -->
+  <section id="setup">
+    <div class="hero">
+      <h1>Your party,<br><em>DJ'd by the crowd's replays.</em></h1>
+      <p>Pick the party. HOOKD plans the whole night: it builds up, peaks, gives the room a breather and peaks again. Every song starts at the part people replay most on YouTube, and it learns from every skip.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="q"><h3>What's the occasion?</h3><div class="chips" id="occ"></div></div>
+        <div class="q"><h3>Languages <span style="text-transform:none;letter-spacing:0">(pick any)</span></h3><div class="chips" id="langs"></div></div>
+        <div class="q"><h3>How many people?</h3><div class="chips" id="crowd"></div></div>
+        <div class="q"><h3>Era</h3><div class="chips" id="era"></div></div>
+        <div class="q"><h3>Vibe</h3>
+          <input type="range" min="1" max="5" step="1" value="4" class="slider" id="vibe">
+          <div class="sl-lab"><span>Music you can talk over</span><span>Only bangers</span></div>
+        </div>
+      </div>
+      <div class="card arcbox">
+        <h3>Your night</h3>
+        <div class="big" id="arcTitle">2 hours · build to peak</div>
+        <p id="arcDesc"></p>
+        <svg class="arc" id="arcPrev" viewBox="0 0 400 150"></svg>
+        <div class="q" style="margin-top:6px"><h3>Set length</h3><div class="chips" id="len"></div></div>
+        <div class="q"><h3>Where are we in the night?</h3><div class="chips" id="startAt"></div></div>
+        <button class="cta" id="go">BUILD MY SET →</button>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+    <div class="how">
+      <div><b>Starts at the replay peak</b>YouTube's "most replayed" data marks where each song really hits. If HOOKD gets it wrong, tap the curve and it remembers.</div>
+      <div><b>Plans the night like a DJ</b>It matches energy to a curve across the set, keeps tempo jumps small, spaces out artists and switches languages.</div>
+      <div><b>Learns your crowd</b>A quick skip, a ♥ or "play full" changes what comes next tonight and the next time you party.</div>
+    </div>
+  </section>
+
+  <!-- ================= PLAYER ================= -->
+  <section id="player">
+    <div class="stage">
+      <div>
+        <div class="screen" id="screen">
+          <div class="yt" id="ytA"><div id="pA"></div></div>
+          <div class="yt" id="ytB" style="opacity:0"><div id="pB"></div></div>
+          <div class="veil"></div>
+          <div class="status" id="status"></div>
+          <div class="np"><div class="badge"><span class="dot"></span><span id="phase">Warm-up</span></div><div class="t" id="npT">—</div><div class="a" id="npA"></div></div>
+          <div class="startover" id="startOver">
+            <h2>Decks are ready.</h2>
+            <p id="startMsg">Loading YouTube…</p>
+            <button class="cta" id="startBtn" disabled>START THE PARTY</button>
+          </div>
+        </div>
+
+        <div class="card hookcard">
+          <div class="hookhead"><span><b>Replay curve</b> · tap where the drop hits and HOOKD will remember</span><span id="tpos">0:00</span></div>
+          <canvas id="curve"></canvas>
+          <div class="ctrls">
+            <button id="bPause"><span>❚❚</span>Pause</button>
+            <button id="bSkip"><span>⏭</span>Skip</button>
+            <button id="bFull"><span>∞</span>Play full</button>
+            <button id="bLike"><span>♥</span>Love it</button>
+            <button id="bSearch"><span>⌕</span>Request</button>
+          </div>
+          <div class="retune">
+            <button class="down" id="bDown">▼ Bring it down</button>
+            <button class="up" id="bUp">▲ More energy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <h3>Up next <button id="bReshuffle">↻ Reshuffle</button></h3>
+          <div id="queue"></div>
+        </div>
+        <div class="card mini-arc">
+          <h3>The night so far <span id="clock" style="letter-spacing:0;text-transform:none"></span></h3>
+          <svg class="arc" id="arcLive" viewBox="0 0 400 150"></svg>
+          <div class="played" id="played"></div>
+        </div>
+        <button class="ghost" id="bEnd" style="margin-top:12px;width:100%">End party &amp; change setup</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">Prototype · Plays through official YouTube videos (YouTube's terms apply; ads may play without Premium). For private parties. Venues need their own public-performance licences. Taste data stays in this browser.</div>
+</div>
+
+<div class="sheet" id="sheet"><div class="box">
+  <input id="sq" placeholder="Search a song or artist…" autocomplete="off">
+  <div class="results" id="results"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================  DATA  ===================== */
+const RAW = [{"t":"Kala Chashma","a":"Badshah, Neha Kakkar","l":"hi","y":2016,"e":9,"b":112,"g":["dance","wedding","singalong"],"v":"YvWKPU2mcLw","h":77.6,"p":95,"d":199,"m":[99,66,57,54,50,54,54,56,54,53,57,54,56,55,54,52,52,51,49,52,56,59,60,63,59,57,60,60,53,54,55,52,53,52,52,53,50,50,52,54,46,46,45,40,40,30,21,13,6,2]},{"t":"London Thumakda","a":"Labh Janjua, Sonu Kakkar, Neha Kakkar","l":"hi","y":2014,"e":9,"b":108,"g":["dance","wedding","bhangra"],"v":"udra3Mfw2oo","h":28.1,"p":45,"d":215,"m":[99,67,67,69,76,76,68,64,62,58,56,51,47,42,38,34,34,31,31,30,29,29,28,28,29,29,30,26,24,24,23,22,22,23,22,20,19,19,19,19,19,16,16,15,13,12,11,9,4,1]},{"t":"Badtameez Dil","a":"Benny Dayal","l":"hi","y":2013,"e":9,"b":128,"g":["dance","singalong"],"v":"N0uDmkTV08Y","h":23.5,"p":66,"d":255,"m":[33,38,48,68,83,95,96,99,91,84,78,76,68,64,64,60,55,50,45,42,37,31,30,32,30,31,32,35,33,34,34,39,38,36,41,44,46,48,54,56,45,35,27,23,22,19,18,15,10,2]},{"t":"Balam Pichkari","a":"Vishal Dadlani, Shalmali Kholgade","l":"hi","y":2013,"e":8,"b":120,"g":["dance","holi","singalong"],"v":"0WtRNGubWGA","h":70.8,"p":45,"d":260,"m":[61,27,30,32,39,44,50,49,50,48,52,57,68,85,97,98,89,76,67,58,48,35,32,36,36,39,43,46,47,47,44,40,36,42,47,43,36,31,31,33,39,44,44,41,34,27,23,18,13,5]},{"t":"Gallan Goodiyaan","a":"Yashita Sharma, Manish Kumar Tipu, Farhan Akhtar","l":"hi","y":2015,"e":9,"b":110,"g":["dance","wedding"],"v":"jCEdTq3j-0U","h":81.7,"p":55,"d":279,"m":[99,64,64,56,51,47,45,45,45,44,38,33,30,29,31,32,28,25,24,23,24,23,19,17,16,16,15,17,17,18,17,16,17,15,15,15,16,17,17,18,19,21,19,15,11,8,6,4,4,2]},{"t":"Nashe Si Chadh Gayi","a":"Arijit Singh","l":"hi","y":2016,"e":7,"b":105,"g":["dance"],"v":"Wd2B8OAotU8","h":7.3,"p":95,"d":155,"m":[88,78,85,92,95,98,98,99,98,98,98,97,96,96,98,97,98,96,94,92,91,91,90,86,85,85,88,89,88,88,85,83,80,79,77,75,72,70,64,60,59,59,57,59,55,52,46,30,13,3]},{"t":"Ghungroo","a":"Arijit Singh, Shilpa Rao","l":"hi","y":2019,"e":7,"b":100,"g":["dance"],"v":"qFkNATtc3mc","h":53.5,"p":45,"d":146,"m":[89,61,64,68,64,63,62,64,64,64,64,62,63,63,64,65,70,73,81,89,97,98,92,83,71,66,66,63,59,51,40,35,33,32,34,33,34,34,35,38,38,39,38,36,34,30,26,19,12,3]},{"t":"Malhari","a":"Vishal Dadlani","l":"hi","y":2015,"e":10,"b":135,"g":["dance","festive"],"v":"l_MyUGq7pgs","h":28.8,"p":95,"d":220,"m":[99,76,80,83,86,86,85,84,82,81,79,76,72,71,69,68,67,68,75,77,78,77,76,76,72,68,65,63,61,59,61,65,66,65,65,64,66,68,74,76,73,69,65,58,53,44,34,21,7,0]},{"t":"Swag Se Swagat","a":"Vishal Dadlani, Neha Bhasin","l":"hi","y":2017,"e":8,"b":115,"g":["dance"],"v":"7TRFf7uUfhQ","h":21.4,"p":95,"d":234,"m":[99,59,60,58,64,66,72,68,69,64,59,53,53,56,62,66,66,60,56,56,54,55,55,54,49,52,52,50,44,42,41,41,39,37,40,44,40,35,32,30,32,33,32,30,28,26,21,16,10,4]},{"t":"Dilbar","a":"Neha Kakkar, Dhvani Bhanushali, Ikka","l":"hi","y":2018,"e":8,"b":105,"g":["dance"],"v":"n2u81Ujc93g","h":21.9,"p":95,"d":133,"m":[65,63,67,72,74,79,84,86,85,88,90,95,96,99,97,94,91,90,87,84,81,79,76,73,70,69,68,68,68,69,70,73,73,72,74,77,81,83,80,71,65,62,57,53,49,39,31,24,15,4]},{"t":"Aankh Marey","a":"Neha Kakkar, Mika Singh, Kumar Sanu","l":"hi","y":2018,"e":9,"b":118,"g":["dance","retro-remix"],"v":"_KhQT-LGb-4","h":26.4,"p":95,"d":203,"m":[99,73,78,78,79,77,77,78,76,74,73,72,73,71,69,67,65,63,62,61,60,59,60,59,58,58,58,59,58,57,57,57,58,59,60,58,59,64,65,59,50,43,39,36,33,27,22,19,11,4]},{"t":"Tamma Tamma Again","a":"Badshah, Bappi Lahiri, Anuradha Paudwal","l":"hi","y":2017,"e":9,"b":120,"g":["dance","retro-remix"],"v":"EEX_XM6SxmY","h":22.8,"p":95,"d":177,"m":[99,84,85,89,88,86,86,87,86,84,80,80,80,83,85,86,85,80,75,72,66,61,61,58,57,58,59,60,65,69,69,70,69,70,72,73,69,68,68,67,69,68,60,52,45,37,29,25,12,3]},{"t":"The Breakup Song","a":"Arijit Singh, Badshah, Jonita Gandhi, Nakash Aziz","l":"hi","y":2016,"e":8,"b":120,"g":["dance","singalong"],"v":"kd5KqlmcHNo","h":23.4,"p":78,"d":212,"m":[99,57,59,56,56,59,62,68,68,63,61,60,58,56,54,52,50,49,47,45,42,41,40,38,38,41,40,39,39,41,44,45,44,43,42,43,39,39,36,35,36,34,29,24,20,16,11,9,5,1]},{"t":"Kar Gayi Chull","a":"Badshah, Neha Kakkar","l":"hi","y":2016,"e":9,"b":118,"g":["dance"],"v":"NTHz9ephYTw","h":6.6,"p":95,"d":143,"m":[99,80,86,91,92,90,92,93,89,87,85,82,81,79,79,78,76,74,72,70,67,67,65,65,63,63,62,64,66,67,67,67,68,68,66,66,63,62,60,55,53,49,45,41,36,32,23,11,5,1]},{"t":"Abhi Toh Party Shuru Hui Hai","a":"Badshah, Aastha Gill","l":"hi","y":2014,"e":9,"b":125,"g":["dance"],"v":"1ZNkzVyT_IQ","h":63.4,"p":95,"d":218,"m":[99,93,90,89,79,81,83,79,81,72,68,70,70,69,60,63,63,61,64,66,58,60,58,64,63,58,55,50,47,48,49,49,53,45,44,42,41,44,42,42,25,21,18,10,12,7,5,7,1,2]},{"t":"DJ Waley Babu","a":"Badshah, Aastha Gill","l":"hi","y":2015,"e":8,"b":110,"g":["dance"],"v":"OulN7vTDq1I","h":32.3,"p":95,"d":156,"m":[99,74,74,78,77,75,76,73,73,70,69,73,72,75,78,77,77,74,72,72,69,69,68,68,66,67,64,66,67,68,68,66,65,64,63,65,64,66,62,58,51,45,39,33,30,26,22,15,12,5]},{"t":"Genda Phool","a":"Badshah, Payal Dev","l":"hi","y":2020,"e":8,"b":100,"g":["dance","holi"],"v":"SD4Z8dlZPd8","h":36.3,"p":95,"d":174,"m":[99,50,45,48,48,47,49,49,48,48,47,47,49,52,51,49,47,47,42,39,38,35,34,33,32,31,31,33,34,37,38,37,35,34,33,31,30,30,28,26,25,22,19,19,16,13,12,10,6,1]},{"t":"Paani Paani","a":"Badshah, Aastha Gill","l":"hi","y":2021,"e":8,"b":105,"g":["dance"],"v":"nFjVlf2r9_Q","h":24.9,"p":87,"d":192,"m":[79,65,73,78,83,85,85,89,96,99,97,91,85,80,76,71,66,64,64,63,61,59,59,59,59,60,59,58,57,58,59,61,60,59,58,56,54,50,48,47,45,46,46,44,38,35,32,22,9,2]},{"t":"Jugnu","a":"Badshah, Nikhita Gandhi","l":"hi","y":2021,"e":7,"b":100,"g":["dance"],"v":"68Sw7GFl2y8","h":68.5,"p":95,"d":235,"m":[99,58,61,59,59,58,57,59,58,60,56,58,63,65,66,75,76,78,71,68,62,58,59,57,56,60,56,58,60,63,56,53,48,44,41,38,40,40,43,41,46,54,60,64,55,45,35,28,12,2]},{"t":"Jhoome Jo Pathaan","a":"Arijit Singh, Sukriti Kakar","l":"hi","y":2023,"e":9,"b":126,"g":["dance"],"v":"YxWlaYCA8MU","h":67.0,"p":51,"d":203,"m":[99,54,55,54,54,54,54,57,57,52,52,49,48,49,47,51,54,60,61,62,63,58,57,52,48,44,39,35,34,33,31,31,31,30,29,28,29,28,30,32,30,29,29,26,23,19,15,11,7,3]},{"t":"Zinda Banda","a":"Anirudh Ravichander","l":"hi","y":2023,"e":9,"b":128,"g":["dance"],"v":"stjZKBhQ3lg","h":138.9,"p":62,"d":261,"m":[80,43,43,49,60,70,81,86,88,87,87,86,89,89,86,89,86,81,71,62,57,54,54,55,56,66,83,99,92,88,82,85,99,88,72,65,61,55,47,44,41,38,36,32,34,30,24,19,14,4]},{"t":"Chaleya","a":"Arijit Singh, Shilpa Rao","l":"hi","y":2023,"e":6,"b":96,"g":["romantic"],"v":"VAdGW7QDJiU","h":43.1,"p":45,"d":188,"m":[99,48,47,49,50,48,52,54,59,57,57,64,67,76,70,69,61,55,50,44,36,31,31,28,30,31,31,33,35,37,35,36,34,34,37,37,37,37,33,31,30,26,22,17,17,15,12,10,6,2]},{"t":"What Jhumka","a":"Arijit Singh, Jonita Gandhi","l":"hi","y":2023,"e":8,"b":115,"g":["dance","wedding"],"v":"vee_P6pIv_E","h":49.1,"p":78,"d":213,"m":[99,42,49,44,40,39,39,40,38,40,38,39,41,44,48,39,35,32,30,28,26,28,28,30,27,26,30,28,27,20,18,17,14,14,15,16,15,15,15,15,13,13,13,10,9,7,6,4,2,2]},{"t":"Aaj Ki Raat","a":"Madhubanti Bagchi, Divya Kumar","l":"hi","y":2024,"e":8,"b":110,"g":["dance"],"v":"hxMNYkLN7tI","h":61.1,"p":95,"d":287,"m":[99,50,50,54,53,58,58,61,62,67,74,81,83,84,84,78,74,71,67,69,69,70,66,65,64,62,64,59,56,57,54,58,56,56,52,52,52,54,56,52,50,45,41,38,35,32,24,21,10,1]},{"t":"Sheila Ki Jawani","a":"Sunidhi Chauhan, Vishal Dadlani","l":"hi","y":2010,"e":9,"b":125,"g":["dance","singalong"],"v":"wNGZXBd2NhY","h":178.5,"p":49,"d":282,"m":[63,55,58,57,58,53,59,62,63,64,52,48,44,38,44,42,34,35,36,43,48,49,52,49,47,40,36,31,33,36,52,69,88,93,69,63,62,62,54,45,39,45,44,43,40,36,31,24,14,4]},{"t":"Munni Badnaam Hui","a":"Mamta Sharma, Aishwarya Nigam","l":"hi","y":2010,"e":9,"b":120,"g":["dance","singalong"],"v":"em0yWq3Garo","h":198.6,"p":81,"d":295,"m":[83,60,63,55,54,57,54,52,50,47,54,53,54,58,59,60,55,53,57,60,57,59,58,58,56,58,60,62,62,59,62,66,65,83,94,99,89,86,85,82,84,70,71,72,70,66,58,40,23,8]},{"t":"Chammak Challo","a":"Akon, Hamsika Iyer","l":"hi","y":2011,"e":8,"b":115,"g":["dance"],"v":"ufHLYw9q7vQ","h":158.6,"p":45,"d":251,"m":[65,37,35,30,27,30,35,35,41,39,33,30,28,26,22,23,21,25,31,32,37,34,31,28,25,23,26,25,29,34,51,76,96,91,94,88,76,63,49,40,35,30,27,24,21,18,12,6,4,1]},{"t":"Desi Girl","a":"Shankar Mahadevan, Sunidhi Chauhan, Vishal Dadlani","l":"hi","y":2008,"e":8,"b":125,"g":["dance"],"v":"wDIrpvH8MzE","h":34.2,"p":52,"d":302,"m":[99,77,83,88,84,84,86,88,96,93,80,70,60,46,40,38,42,45,49,57,60,56,51,47,45,47,50,54,60,66,67,71,76,72,63,55,49,44,41,43,46,46,48,46,37,30,25,16,7,1]},{"t":"Dance Pe Chance","a":"Sunidhi Chauhan, Labh Janjua","l":"hi","y":2008,"e":8,"b":128,"g":["dance"],"v":"rap8SoUIPaw","h":13.3,"p":95,"d":255,"m":[99,71,75,77,75,69,66,65,61,57,53,49,48,51,53,53,51,48,50,47,45,45,41,39,38,38,35,33,34,33,32,34,33,35,36,34,31,30,31,28,27,28,29,32,27,24,21,18,13,4]},{"t":"Ainvayi Ainvayi","a":"Salim Merchant, Sunidhi Chauhan","l":"hi","y":2010,"e":8,"b":125,"g":["dance","wedding"],"v":"pElk1ShPrcE","h":82.9,"p":50,"d":283,"m":[99,52,55,59,69,80,81,73,71,71,72,77,75,66,66,73,87,79,75,71,61,50,43,44,45,48,57,63,65,65,70,75,61,43,39,39,38,38,40,46,58,59,57,51,46,41,32,23,17,6]},{"t":"Chikni Chameli","a":"Shreya Ghoshal","l":"hi","y":2012,"e":9,"b":130,"g":["dance"],"v":"MQM7CNoAsBI","h":34.5,"p":83,"d":365,"m":[85,45,50,63,82,99,97,91,85,72,75,77,80,71,65,55,43,31,30,32,39,56,81,76,85,94,90,84,82,83,73,64,66,62,62,78,97,88,82,82,83,83,80,79,68,58,32,19,11,4]},{"t":"Tune Maari Entriyaan","a":"KK, Neeti Mohan, Vishal Dadlani, Bappi Lahiri","l":"hi","y":2014,"e":9,"b":128,"g":["dance","singalong"],"v":"2I3NgxDAiqE","h":115.0,"p":95,"d":266,"m":[99,63,63,61,58,57,57,57,57,57,55,53,46,45,47,53,58,54,54,54,52,55,65,67,61,52,43,38,39,39,45,50,49,46,42,43,43,43,44,44,43,44,44,40,34,31,25,20,14,5]},{"t":"Lungi Dance","a":"Yo Yo Honey Singh","l":"hi","y":2013,"e":9,"b":105,"g":["dance","singalong"],"v":"fbwCgt1hMD4","h":61.6,"p":95,"d":212,"m":[94,95,97,95,83,75,69,66,65,62,60,59,55,52,48,44,42,41,38,40,41,38,39,41,42,43,38,38,37,36,34,31,31,31,32,32,30,29,28,29,31,32,28,29,25,22,19,11,7,2]},{"t":"Party All Night","a":"Yo Yo Honey Singh","l":"hi","y":2013,"e":9,"b":128,"g":["dance"],"v":"Wd7H311MrWA","h":161.2,"p":45,"d":240,"m":[99,57,51,41,39,38,35,34,34,32,30,29,28,29,34,36,40,36,36,35,36,38,32,30,28,28,28,27,26,28,31,37,45,48,52,56,56,50,43,33,29,27,22,18,15,11,8,8,6,3]},{"t":"Blue Eyes","a":"Yo Yo Honey Singh","l":"hi","y":2013,"e":8,"b":100,"g":["dance"],"v":"NbyHNASFi6U","h":41.7,"p":95,"d":243,"m":[97,51,52,53,56,58,65,71,84,94,95,92,88,82,81,83,82,78,77,70,68,64,63,62,60,59,58,57,61,61,58,59,61,61,64,65,64,67,63,59,52,49,40,39,32,32,24,19,11,3]},{"t":"Sunny Sunny","a":"Yo Yo Honey Singh, Neha Kakkar","l":"hi","y":2014,"e":8,"b":115,"g":["dance"],"v":"MXJCnccDLA0","h":61.9,"p":95,"d":213,"m":[99,75,73,69,68,66,64,61,60,57,55,54,54,54,53,55,55,54,51,51,48,49,47,45,43,42,44,44,43,45,44,49,48,48,46,43,39,35,36,34,31,26,23,20,18,18,17,13,7,3]},{"t":"Dhating Naach","a":"Nakash Aziz, Neha Bhasin","l":"hi","y":2014,"e":9,"b":125,"g":["dance"],"v":"1j5aaDOA9XQ","h":32.2,"p":95,"d":171,"m":[51,43,54,72,80,86,89,88,86,86,89,87,91,98,97,94,91,86,90,88,97,92,95,89,87,86,81,85,86,90,80,76,70,70,64,67,67,71,69,70,63,57,51,46,38,27,15,7,3,0]},{"t":"Gandi Baat","a":"Mika Singh, Ritu Pathak","l":"hi","y":2013,"e":9,"b":128,"g":["dance"],"v":"bpOJmRlgg-4","h":38.0,"p":95,"d":250,"m":[99,81,71,66,60,64,56,63,69,75,72,78,69,69,61,60,61,60,60,66,72,77,75,68,67,65,71,79,71,73,65,55,57,58,60,64,72,77,68,70,66,54,47,45,36,34,32,23,12,5]},{"t":"Saturday Saturday","a":"Badshah, Indeep Bakshi","l":"hi","y":2014,"e":8,"b":115,"g":["dance"],"v":"0fXlZ3vnQd0","h":133.2,"p":45,"d":218,"m":[45,44,45,48,56,54,49,49,46,50,54,60,64,58,54,57,64,70,68,66,64,62,61,61,62,65,67,70,67,74,82,94,99,87,76,67,63,59,54,54,58,66,74,73,68,53,45,40,33,10]},{"t":"Gal Ban Gayi","a":"Sukhbir, Neha Kakkar, Yo Yo Honey Singh, Meet Bros","l":"hi","y":2016,"e":9,"b":110,"g":["dance","wedding","bhangra"],"v":"dUtH4px2yOA","h":34.2,"p":95,"d":151,"m":[44,40,53,64,69,77,80,84,88,92,94,95,95,97,96,99,99,98,96,92,89,86,83,82,82,83,83,87,91,94,97,97,96,94,94,93,91,91,88,84,78,71,63,54,46,37,28,19,9,2]},{"t":"Hauli Hauli","a":"Garry Sandhu, Neha Kakkar","l":"hi","y":2018,"e":8,"b":110,"g":["dance","wedding"],"v":"leyEatUq00E","h":13.0,"p":85,"d":188,"m":[99,72,75,75,77,82,85,87,84,80,76,73,70,70,67,62,58,54,53,53,52,54,53,51,51,50,49,49,50,50,47,45,48,44,47,47,46,46,44,43,41,40,39,35,31,19,8,3,1,0]},{"t":"Morni Banke","a":"Guru Randhawa, Neha Kakkar","l":"hi","y":2018,"e":8,"b":110,"g":["dance","wedding"],"v":"MhgURCPNoD0","h":57.4,"p":81,"d":198,"m":[99,65,63,61,60,59,55,51,49,46,45,42,40,38,35,34,30,29,29,28,28,25,24,23,24,23,24,23,23,23,22,20,20,20,19,19,19,19,18,19,20,18,17,16,14,12,9,6,5,1]},{"t":"Muqabla","a":"Yash Narvekar, Parampara Thakur","l":"hi","y":2020,"e":9,"b":128,"g":["dance","retro-remix"],"v":"l75z7FrYRXI","h":52.9,"p":76,"d":183,"m":[99,65,63,61,58,56,54,53,52,52,50,47,45,43,40,37,35,34,32,34,36,34,33,33,32,31,32,33,32,31,29,28,25,22,17,15,13,13,14,13,11,11,9,9,7,6,5,4,2,1]},{"t":"Players","a":"Badshah, Karan Aujla","l":"hi","y":2024,"e":8,"b":100,"g":["dance","hiphop"],"v":"ZZJs4c8WBVU","h":82.5,"p":61,"d":169,"m":[99,58,55,69,64,54,52,53,47,51,49,45,42,42,43,42,44,41,43,44,45,45,47,45,49,56,54,58,54,55,57,55,54,50,51,50,50,41,38,34,29,28,23,23,19,17,17,14,7,2]},{"t":"Sauda Khara Khara","a":"Diljit Dosanjh, Dhvani Bhanushali, Sukhbir","l":"hi","y":2019,"e":9,"b":110,"g":["dance","wedding","bhangra"],"v":"LYEqeUr-158","h":15.8,"p":85,"d":222,"m":[99,51,53,50,52,55,58,58,54,53,52,50,47,46,43,42,42,43,43,39,36,32,28,26,26,25,24,25,24,24,24,24,26,28,27,26,26,24,23,21,19,16,14,13,11,10,7,5,1,0]},{"t":"Nachde Ne Saare","a":"Jasleen Royal, Harshdeep Kaur, Siddharth Mahadevan","l":"hi","y":2015,"e":9,"b":105,"g":["wedding","bhangra"],"v":"HgIW7P4dsXU","h":58.9,"p":95,"d":203,"m":[99,76,75,73,69,67,63,62,57,54,51,46,43,39,36,31,29,28,29,29,30,29,29,28,25,24,23,22,20,20,21,21,21,21,21,22,24,27,27,26,24,22,19,16,14,13,10,8,3,0]},{"t":"Bom Diggy Diggy","a":"Zack Knight, Jasmin Walia","l":"hi","y":2018,"e":8,"b":100,"g":["dance"],"v":"yIIGQB6EMAM","h":30.3,"p":95,"d":202,"m":[99,65,65,63,62,63,64,64,65,64,69,71,74,69,66,63,59,54,49,48,48,49,50,48,46,45,45,48,47,43,43,41,41,40,40,40,38,38,37,36,33,33,33,33,33,26,21,16,11,5]},{"t":"Tareefan","a":"Badshah, Qaran, Lisa Mishra","l":"hi","y":2018,"e":8,"b":105,"g":["dance"],"v":"3SWc5G8Gx7E","h":31.3,"p":95,"d":185,"m":[97,72,72,72,75,77,77,80,83,86,93,96,99,93,87,83,80,74,68,67,64,64,63,64,63,62,62,60,60,61,60,57,56,55,58,60,61,60,59,59,56,54,52,46,38,24,13,7,3,0]},{"t":"Sweetheart","a":"Dev Negi","l":"hi","y":2018,"e":9,"b":115,"g":["wedding","dance"],"v":"58r8MDf5sxQ","h":29.2,"p":55,"d":223,"m":[94,60,64,66,71,75,81,90,97,95,91,88,84,78,72,65,58,52,50,46,41,39,39,37,36,35,35,35,36,37,39,39,39,37,36,34,33,31,30,26,24,21,21,19,17,15,12,10,4,0]},{"t":"Laila Main Laila","a":"Pawni Pandey","l":"hi","y":2017,"e":8,"b":110,"g":["dance"],"v":"wjk7lV4PwAo","h":23.5,"p":95,"d":319,"m":[99,80,81,82,88,92,92,91,86,84,80,81,80,81,84,85,80,78,79,81,82,84,81,81,84,83,75,69,67,60,55,53,51,51,49,44,40,38,41,40,41,48,64,77,75,71,52,26,6,0]},{"t":"Dil Chori","a":"Yo Yo Honey Singh, Simar Kaur, Ishers","l":"hi","y":2018,"e":9,"b":105,"g":["dance","bhangra"],"v":"f0D-JYNIDCc","h":46.0,"p":95,"d":218,"m":[99,71,70,62,58,57,59,60,64,71,79,79,94,94,85,77,82,73,81,65,61,60,60,56,61,56,60,64,67,59,59,56,58,57,50,55,55,54,55,55,53,51,44,36,34,27,25,20,16,5]},{"t":"Makhna","a":"Yo Yo Honey Singh, Neha Kakkar","l":"hi","y":2019,"e":8,"b":100,"g":["dance"],"v":"1bvYHkQxWmg","h":102.5,"p":81,"d":209,"m":[68,50,57,58,62,59,59,58,57,59,59,57,56,55,55,56,57,58,58,60,61,64,66,72,82,93,98,98,97,92,85,82,79,77,67,63,65,68,70,67,65,61,60,53,48,40,33,24,11,3]},{"t":"Nadiyon Paar","a":"Shamur, Rashmeet Kaur","l":"hi","y":2021,"e":9,"b":120,"g":["dance","wedding"],"v":"DKj5m9cSMZs","h":24.6,"p":95,"d":148,"m":[97,58,67,78,79,85,87,90,94,96,98,97,96,98,98,96,91,85,82,78,77,75,71,70,66,63,63,64,63,62,65,68,73,75,72,68,65,65,63,63,58,55,48,43,37,30,24,20,14,3]},{"t":"Garmi","a":"Badshah, Neha Kakkar","l":"hi","y":2020,"e":9,"b":110,"g":["dance"],"v":"IE8OD5FbU-c","h":42.3,"p":95,"d":277,"m":[99,59,57,58,57,59,58,57,53,59,65,61,57,50,42,38,37,39,40,41,39,37,38,42,42,42,36,33,31,31,29,28,29,29,23,20,23,20,19,21,18,16,17,19,14,12,10,8,8,3]},{"t":"O Saki Saki","a":"Neha Kakkar, Tulsi Kumar, B Praak","l":"hi","y":2019,"e":9,"b":112,"g":["dance","retro-remix"],"v":"_uUdJalMaF8","h":59.5,"p":95,"d":205,"m":[99,71,71,66,63,61,58,58,57,56,59,57,58,53,47,43,40,37,35,34,34,33,32,32,32,33,32,32,32,34,33,33,31,29,28,26,25,23,22,20,19,18,16,14,12,10,8,4,1,0]},{"t":"Bhool Bhulaiyaa 2 Title Track","a":"Neeraj Shridhar, Pritam","l":"hi","y":2022,"e":9,"b":125,"g":["dance","singalong"],"v":"B9_nql5xBFo","h":46.2,"p":95,"d":241,"m":[99,58,53,52,53,53,52,54,52,54,58,63,61,59,55,54,54,55,54,55,56,54,54,54,53,52,49,47,48,43,43,41,40,40,41,44,44,46,46,46,45,41,39,34,31,27,25,22,15,4]},{"t":"Lut Putt Gaya","a":"Arijit Singh","l":"hi","y":2023,"e":7,"b":105,"g":["dance","romantic"],"v":"7CdpHATpXXU","h":179.6,"p":45,"d":227,"m":[93,48,53,51,56,58,56,59,57,55,50,52,52,55,50,49,45,43,41,37,35,35,35,32,32,32,32,31,30,30,31,30,30,33,32,34,39,42,56,75,99,83,77,65,56,40,25,12,5,1]},{"t":"Senorita","a":"Farhan Akhtar, Hrithik Roshan, Abhay Deol","l":"hi","y":2011,"e":7,"b":110,"g":["singalong"],"v":"PuhOFhmy3BU","h":36.2,"p":45,"d":91,"m":[69,42,44,47,45,41,41,39,40,43,46,41,43,45,49,48,48,55,55,66,57,65,99,65,54,52,53,52,57,60,64,59,54,51,53,47,42,37,34,30,30,21,16,15,18,19,28,42,34,19]},{"t":"Ude Dil Befikre","a":"Benny Dayal","l":"hi","y":2016,"e":8,"b":120,"g":["dance"],"v":"gXe-KWe-YMs","h":116.6,"p":45,"d":228,"m":[72,58,60,61,63,59,57,52,51,52,54,54,55,58,73,78,61,49,48,51,55,62,65,66,63,70,90,99,85,59,55,53,49,41,40,40,39,40,41,40,38,35,34,34,34,31,29,24,16,3]},{"t":"Hookah Bar","a":"Himesh Reshammiya, Vineet Singh, Aman Trikha","l":"hi","y":2012,"e":9,"b":128,"g":["dance"],"v":"59mHbOOYY0E","h":76,"p":75,"d":272,"m":null},{"t":"Character Dheela","a":"Neeraj Shridhar, Amrita Kak","l":"hi","y":2011,"e":8,"b":115,"g":["dance"],"v":"p_0zsIyYs08","h":146.2,"p":45,"d":218,"m":[85,61,65,67,66,56,65,65,70,66,68,66,67,61,63,61,63,59,58,58,63,70,75,80,70,68,74,62,63,59,61,65,72,75,90,89,92,80,64,64,55,52,49,45,43,45,45,39,25,7]},{"t":"Dhoom Machale","a":"Sunidhi Chauhan","l":"hi","y":2004,"e":9,"b":130,"g":["dance","singalong"],"v":"2uUmHTgT65I","h":106.4,"p":95,"d":301,"m":[99,55,59,59,60,62,60,60,59,60,60,61,60,59,60,62,59,58,63,67,71,70,66,65,63,62,60,56,54,48,45,43,42,43,44,44,41,45,45,42,42,38,35,36,35,32,22,14,7,0]},{"t":"Crazy Kiya Re","a":"Sunidhi Chauhan","l":"hi","y":2006,"e":8,"b":120,"g":["dance"],"v":"w656ZPdk04I","h":83.8,"p":54,"d":148,"m":[91,67,67,65,66,66,69,67,73,73,78,74,72,74,72,80,75,77,72,76,71,67,66,60,61,67,65,82,80,91,89,98,91,93,74,77,63,69,64,62,66,63,68,58,50,38,31,21,11,3]},{"t":"Beedi","a":"Sukhwinder Singh, Sunidhi Chauhan","l":"hi","y":2006,"e":9,"b":120,"g":["dance"],"v":"XLJCtZK0x5M","h":70.6,"p":83,"d":363,"m":[42,17,33,59,56,63,66,66,73,81,97,98,85,73,60,59,66,70,67,57,47,44,50,55,54,56,52,53,52,47,24,34,30,48,72,94,69,58,55,47,48,54,59,59,58,50,37,25,16,6]},{"t":"Nach Punjaban","a":"Gippy Grewal, Zahrah S Khan, Tanishk Bagchi","l":"hi","y":2022,"e":9,"b":110,"g":["wedding","bhangra"],"v":"BJi1_eQ-JRY","h":181.4,"p":45,"d":262,"m":[26,18,20,25,30,39,21,21,22,18,18,18,18,19,22,24,25,24,22,24,23,22,22,22,23,26,26,28,31,33,32,28,41,55,62,84,99,85,47,38,35,38,29,22,28,25,17,14,9,2]},{"t":"Rangisari","a":"Kanishk Seth, Kavya Limaye","l":"hi","y":2022,"e":7,"b":100,"g":["wedding","holi"],"v":"bSAlE_WgHxY","h":67.0,"p":45,"d":203,"m":[75,46,51,56,55,54,54,54,57,58,64,65,60,60,64,76,87,97,98,99,95,91,81,71,62,53,49,47,45,44,44,45,47,52,55,58,60,60,62,61,50,39,33,30,27,24,19,13,9,3]},{"t":"Kudmayi","a":"Shahid Mallya","l":"hi","y":2023,"e":5,"b":90,"g":["wedding","romantic"],"v":"4vFw1dzXQDs","h":78.1,"p":95,"d":267,"m":[99,31,35,30,34,34,32,30,30,30,30,32,31,32,31,32,30,29,29,29,28,28,28,27,27,27,30,31,31,27,29,26,27,26,27,28,29,27,25,23,20,20,18,17,15,15,12,9,3,0]},{"t":"Kesariya","a":"Arijit Singh","l":"hi","y":2022,"e":5,"b":94,"g":["romantic","singalong"],"v":"BddP6PYo2gs","h":22.2,"p":95,"d":173,"m":[99,56,59,58,62,55,56,54,55,57,56,53,54,54,55,51,48,46,44,42,43,39,38,37,37,37,35,36,38,39,43,43,42,38,37,32,32,31,28,27,26,23,22,19,17,15,12,10,7,2]},{"t":"Raataan Lambiyan","a":"Jubin Nautiyal, Asees Kaur","l":"hi","y":2021,"e":5,"b":95,"g":["romantic","singalong"],"v":"gvyUuxdRdR4","h":19.3,"p":95,"d":152,"m":[99,71,79,86,88,87,83,80,78,75,74,72,72,71,71,70,69,67,65,63,61,60,60,61,61,60,59,58,57,56,56,56,55,56,59,63,66,66,66,64,54,45,36,29,23,18,13,7,3,1]},{"t":"Tum Hi Ho","a":"Arijit Singh","l":"hi","y":2013,"e":3,"b":94,"g":["romantic","chill"],"v":"81qmmlsIE3k","h":124.0,"p":45,"d":300,"m":[46,25,28,37,44,52,40,38,40,44,41,42,42,44,47,51,47,56,63,71,82,87,97,91,88,73,48,33,30,27,25,25,29,31,39,41,44,42,42,39,38,34,28,27,26,27,26,20,10,3]},{"t":"Channa Mereya","a":"Arijit Singh","l":"hi","y":2016,"e":3,"b":85,"g":["romantic","chill"],"v":"284Ov7ysmfA","h":34.8,"p":58,"d":184,"m":[99,46,45,48,44,46,46,48,51,53,56,62,64,63,61,56,53,49,46,44,42,39,38,38,37,36,35,36,36,36,37,38,34,33,32,33,30,28,26,26,25,25,24,23,21,19,14,9,5,0]},{"t":"Apna Bana Le","a":"Arijit Singh","l":"hi","y":2022,"e":4,"b":90,"g":["romantic","chill"],"v":"u2NAuswnTKs","h":30.8,"p":95,"d":273,"m":[97,61,68,81,90,93,96,95,99,99,92,92,90,89,88,87,88,85,83,85,84,81,82,81,81,85,86,90,88,87,87,83,76,74,70,65,62,57,53,44,39,35,32,28,25,21,16,11,5,0]},{"t":"Ae Dil Hai Mushkil","a":"Arijit Singh","l":"hi","y":2016,"e":4,"b":95,"g":["romantic","chill"],"v":"6FURuLYrR_Q","h":178.6,"p":76,"d":301,"m":[99,47,52,59,59,58,59,61,63,61,59,59,59,60,61,64,65,65,64,64,63,62,60,61,59,58,58,57,60,67,76,79,80,78,76,76,69,63,58,53,48,44,39,36,29,22,16,11,9,4]},{"t":"Kun Faya Kun","a":"A.R. Rahman, Javed Ali, Mohit Chauhan","l":"hi","y":2011,"e":3,"b":80,"g":["sufi","chill"],"v":"T94PHkuydcw","h":188.5,"p":56,"d":381,"m":[78,29,28,28,26,27,27,29,31,36,39,43,44,45,48,46,47,48,49,53,60,65,70,78,81,92,98,94,93,81,68,54,44,40,45,48,47,50,49,52,59,78,99,94,78,62,48,32,19,6]},{"t":"Tauba Tauba","a":"Karan Aujla","l":"pa","y":2024,"e":8,"b":105,"g":["dance","bhangra"],"v":"LK7-_dgAVQE","h":109.0,"p":68,"d":222,"m":[99,58,65,73,68,63,60,62,64,61,62,60,55,55,55,55,53,51,52,51,50,50,52,53,59,66,72,71,62,55,50,48,45,43,44,43,44,40,42,41,37,34,30,27,25,24,19,15,5,0]},{"t":"Softly","a":"Karan Aujla","l":"pa","y":2023,"e":7,"b":100,"g":["dance"],"v":"cWMxCE2HTag","h":49.3,"p":92,"d":171,"m":[99,54,53,57,56,50,52,49,50,49,49,50,47,46,43,43,42,41,40,39,39,34,33,33,31,31,31,30,29,31,29,29,29,28,27,29,28,28,27,24,22,19,18,15,12,9,6,3,2,0]},{"t":"Wavy","a":"Karan Aujla","l":"pa","y":2024,"e":7,"b":95,"g":["dance"],"v":"XTp5jaRU3Ws","h":75.3,"p":52,"d":161,"m":[99,55,54,66,62,53,56,53,52,56,53,55,54,55,53,54,57,57,57,58,58,61,59,64,68,71,76,73,69,62,60,57,55,51,50,48,44,45,40,38,37,32,28,25,23,19,15,11,8,2]},{"t":"52 Bars","a":"Karan Aujla, Ikky","l":"pa","y":2022,"e":7,"b":90,"g":["hiphop"],"v":"4DfVxVeqk2o","h":46.8,"p":95,"d":222,"m":[85,48,55,66,70,67,68,69,73,77,84,92,98,99,98,93,86,85,87,86,85,88,86,88,86,89,91,87,88,90,91,83,78,74,71,70,69,65,60,48,41,37,34,32,27,23,18,13,8,0]},{"t":"Admirin You","a":"Karan Aujla, Ikky","l":"pa","y":2023,"e":6,"b":100,"g":["romantic"],"v":"k85UB5b6pJU","h":154.1,"p":45,"d":211,"m":[95,37,45,51,46,51,48,53,47,53,56,67,77,79,82,74,64,61,56,50,47,45,43,41,40,42,38,37,38,38,41,40,45,46,58,60,82,99,94,82,73,60,48,36,28,22,14,10,5,1]},{"t":"Brown Munde","a":"AP Dhillon, Gurinder Gill, Shinda Kahlon","l":"pa","y":2020,"e":8,"b":95,"g":["dance","hiphop"],"v":"VNs_cCtdbPc","h":24.8,"p":95,"d":268,"m":[98,52,55,64,76,89,96,83,77,74,71,71,69,68,66,64,62,61,61,62,62,61,60,60,62,65,73,76,69,63,61,59,59,54,51,50,49,45,42,41,39,39,34,32,31,24,18,11,5,2]},{"t":"Excuses","a":"AP Dhillon, Gurinder Gill","l":"pa","y":2020,"e":6,"b":95,"g":["romantic","chill"],"v":"vX2cDW8LUWk","h":44.0,"p":95,"d":177,"m":[99,56,59,64,63,62,64,64,66,68,68,72,75,76,83,84,82,81,77,71,67,67,63,61,61,61,60,61,59,58,58,57,54,54,54,53,54,53,51,47,43,40,36,28,22,17,12,8,5,1]},{"t":"Summer High","a":"AP Dhillon","l":"pa","y":2022,"e":7,"b":110,"g":["dance"],"v":"nqUN530Rgtw","h":22.7,"p":95,"d":206,"m":[94,52,63,69,80,87,85,91,98,99,93,89,86,84,83,83,81,80,79,79,79,78,79,80,79,78,75,74,73,71,69,68,65,64,62,60,58,52,46,42,38,35,31,28,25,23,16,8,4,0]},{"t":"With You","a":"AP Dhillon","l":"pa","y":2023,"e":5,"b":85,"g":["romantic","chill"],"v":"mZQH8CPQ-wo","h":29.0,"p":95,"d":155,"m":[99,53,46,42,40,39,44,42,44,42,42,43,44,44,44,45,40,38,37,36,37,34,34,34,34,33,34,36,38,42,40,39,39,34,32,29,28,26,27,25,25,23,24,23,21,19,14,12,10,3]},{"t":"Insane","a":"AP Dhillon, Gurinder Gill, Shinda Kahlon","l":"pa","y":2021,"e":7,"b":100,"g":["dance"],"v":"cqP8I5aaud8","h":42.9,"p":95,"d":204,"m":[81,42,48,51,59,64,69,75,77,80,85,89,96,97,96,90,89,87,89,90,96,99,94,87,82,79,77,75,74,74,76,74,70,67,65,62,59,55,52,49,45,41,37,34,31,27,21,15,6,1]},{"t":"Lover","a":"Diljit Dosanjh","l":"pa","y":2021,"e":7,"b":100,"g":["romantic","dance"],"v":"mH_LFkWxpI0","h":31.8,"p":78,"d":188,"m":[99,51,50,55,59,60,59,57,56,58,56,58,61,62,57,53,50,45,41,39,39,38,38,39,38,39,37,36,35,35,36,36,35,34,32,30,29,28,28,27,26,24,23,21,18,16,11,7,4,1]},{"t":"Born To Shine","a":"Diljit Dosanjh","l":"pa","y":2020,"e":7,"b":95,"g":["dance"],"v":"dCmp56tSSmA","h":89.6,"p":95,"d":218,"m":[99,53,59,65,67,67,68,64,62,58,58,58,55,56,57,60,63,62,63,62,61,65,66,65,67,67,62,57,55,52,50,49,52,48,48,49,46,45,45,42,41,39,35,30,27,25,20,15,10,5]},{"t":"G.O.A.T.","a":"Diljit Dosanjh","l":"pa","y":2020,"e":8,"b":100,"g":["dance","hiphop"],"v":"cl0a3i2wFcc","h":29.4,"p":95,"d":224,"m":[99,49,58,66,66,67,61,55,54,53,52,52,51,53,53,53,50,48,46,45,48,46,46,50,51,50,48,45,45,45,44,43,43,45,44,48,52,55,50,45,40,36,33,26,22,18,11,8,3,1]},{"t":"Do You Know","a":"Diljit Dosanjh","l":"pa","y":2016,"e":6,"b":95,"g":["romantic"],"v":"P-DhwN87JDY","h":59.6,"p":95,"d":220,"m":[99,43,54,55,57,62,67,71,75,75,76,79,81,83,86,86,90,93,93,87,85,83,82,82,83,84,84,86,88,91,87,84,84,84,89,87,88,81,78,73,70,64,59,55,49,40,31,24,18,7]},{"t":"Patiala Peg","a":"Diljit Dosanjh","l":"pa","y":2016,"e":9,"b":108,"g":["bhangra","dance"],"v":"slUoxZedJwE","h":74.2,"p":95,"d":254,"m":[99,22,26,27,23,24,25,29,34,37,36,33,43,51,61,58,67,64,61,55,53,50,50,44,44,44,46,51,54,56,55,62,65,63,63,53,45,43,38,40,41,43,38,44,47,44,35,25,16,5]},{"t":"5 Taara","a":"Diljit Dosanjh","l":"pa","y":2015,"e":8,"b":105,"g":["bhangra","dance"],"v":"MsTW5cyWKj4","h":43.0,"p":95,"d":225,"m":[91,51,59,61,59,60,59,63,69,76,84,99,91,92,93,94,83,78,76,75,77,75,73,71,72,75,72,75,75,74,74,70,69,68,67,67,66,65,64,64,67,66,62,61,63,49,33,26,16,5]},{"t":"Laembadgini","a":"Diljit Dosanjh","l":"pa","y":2014,"e":9,"b":110,"g":["bhangra","dance"],"v":"15Sjjl_24x0","h":106.5,"p":95,"d":339,"m":[86,35,26,26,28,28,31,36,39,34,46,46,47,57,65,77,95,98,96,97,96,93,94,91,91,94,91,92,91,91,87,87,87,83,83,80,80,81,82,75,69,59,44,32,25,21,16,12,11,6]},{"t":"Proper Patola","a":"Diljit Dosanjh, Badshah","l":"pa","y":2014,"e":9,"b":110,"g":["bhangra","dance"],"v":"GVhmynWOPoM","h":11.1,"p":95,"d":164,"m":[69,66,78,86,91,93,99,95,90,89,86,88,88,90,90,92,90,91,93,93,94,95,95,90,89,85,84,83,82,81,83,83,81,80,80,80,79,77,75,71,67,63,61,57,53,49,43,27,10,0]},{"t":"Naina","a":"Diljit Dosanjh, Badshah","l":"pa","y":2024,"e":7,"b":100,"g":["dance"],"v":"3u6lLWGjFLY","h":15.3,"p":62,"d":173,"m":[99,65,65,68,72,69,73,78,77,82,74,72,70,68,65,64,55,54,49,47,47,48,46,49,47,48,49,52,51,54,54,50,51,49,48,49,50,47,47,44,42,39,36,34,31,27,22,11,3,0]},{"t":"So High","a":"Sidhu Moose Wala","l":"pa","y":2017,"e":7,"b":90,"g":["hiphop"],"v":"GgmFC8y8q3k","h":35.4,"p":95,"d":234,"m":[99,76,83,93,89,83,83,80,82,83,86,85,84,84,85,84,83,82,81,82,81,82,82,82,81,80,80,79,77,77,74,75,74,74,72,71,71,71,71,64,60,57,54,42,33,28,19,10,4,1]},{"t":"295","a":"Sidhu Moose Wala","l":"pa","y":2021,"e":7,"b":95,"g":["hiphop"],"v":"C9OmyNRyz4E","h":100,"p":75,"d":357,"m":null},{"t":"The Last Ride","a":"Sidhu Moose Wala","l":"pa","y":2022,"e":6,"b":90,"g":["hiphop"],"v":"6xoB4ZiKKn0","h":141.5,"p":95,"d":276,"m":[99,50,65,78,92,74,66,67,64,63,61,64,64,61,63,65,69,70,68,65,69,70,73,70,71,74,75,78,77,76,72,73,74,78,75,70,70,70,71,65,65,65,60,55,44,37,28,19,10,3]},{"t":"Same Beef","a":"Bohemia, Sidhu Moose Wala","l":"pa","y":2019,"e":8,"b":95,"g":["hiphop"],"v":"qk2WMmiiVFE","h":139.5,"p":57,"d":262,"m":[99,74,78,70,68,67,65,61,60,62,60,61,62,65,64,64,65,67,67,71,76,82,83,82,77,72,76,88,95,84,74,69,67,64,60,55,53,50,48,45,43,43,41,38,32,28,22,17,11,3]},{"t":"Bambiha Bole","a":"Amrit Maan, Sidhu Moose Wala","l":"pa","y":2020,"e":8,"b":100,"g":["bhangra","hiphop"],"v":"hpVNMjpjiJc","h":156.6,"p":95,"d":305,"m":[85,52,49,45,49,48,47,47,46,45,44,45,46,49,52,52,50,51,55,56,59,59,60,66,75,83,87,92,99,90,86,83,82,80,79,85,92,93,79,70,64,62,60,57,56,48,37,34,26,5]},{"t":"Jatt Da Muqabala","a":"Sidhu Moose Wala","l":"pa","y":2018,"e":8,"b":95,"g":["bhangra"],"v":"1a98SSuRykk","h":116.9,"p":47,"d":205,"m":[14,1,4,2,6,6,11,19,23,30,40,44,46,46,46,47,50,52,55,59,63,68,69,68,70,74,79,83,88,91,93,92,99,96,89,83,82,67,56,49,46,45,43,37,32,23,21,17,13,6]},{"t":"High Rated Gabru","a":"Guru Randhawa","l":"pa","y":2017,"e":9,"b":105,"g":["dance","bhangra"],"v":"hjWf8A0YNSE","h":37.1,"p":95,"d":217,"m":[99,72,78,79,76,74,71,70,70,71,72,74,76,73,71,69,66,65,65,62,62,62,64,65,64,64,63,64,64,63,63,62,63,60,58,57,58,58,57,58,53,49,42,37,33,30,26,17,9,2]},{"t":"Lahore","a":"Guru Randhawa","l":"pa","y":2017,"e":8,"b":100,"g":["dance"],"v":"dZ0fwJojhrs","h":35.6,"p":95,"d":235,"m":[99,50,49,50,54,59,66,74,79,90,84,80,76,76,76,78,77,79,75,75,73,74,75,76,76,76,77,76,74,71,70,70,69,68,68,64,64,60,56,53,51,46,42,41,38,37,33,26,15,0]},{"t":"Suit Suit","a":"Guru Randhawa, Arjun","l":"pa","y":2017,"e":8,"b":100,"g":["dance","wedding"],"v":"uQ763VvqiEM","h":26.4,"p":95,"d":203,"m":[99,55,61,61,62,64,61,61,59,59,57,57,58,58,56,53,53,52,49,49,49,49,52,52,52,54,53,54,55,55,56,56,56,55,55,50,46,45,44,45,46,44,40,35,31,27,21,15,9,5]},{"t":"Made In India","a":"Guru Randhawa","l":"pa","y":2018,"e":7,"b":100,"g":["dance"],"v":"pnMQLrS5sTE","h":41.7,"p":95,"d":243,"m":[76,49,49,54,57,62,69,76,84,92,99,95,89,90,90,87,83,80,80,77,77,78,80,83,84,87,91,90,87,82,78,75,78,81,82,88,89,84,75,70,64,64,63,56,49,40,33,28,14,3]},{"t":"Patola","a":"Guru Randhawa, Bohemia","l":"pa","y":2015,"e":8,"b":98,"g":["dance"],"v":"z-ZEHL4Df-A","h":94.0,"p":46,"d":150,"m":[99,58,59,67,64,67,66,66,68,69,69,69,69,68,66,66,66,64,66,66,70,69,68,70,68,70,67,67,64,64,65,65,66,72,71,74,74,74,69,64,58,54,50,46,39,32,24,17,10,3]},{"t":"Lamberghini","a":"The Doorbeen, Ragini","l":"pa","y":2018,"e":9,"b":105,"g":["wedding","bhangra","singalong"],"v":"5X7WWVTrBvM","h":15.4,"p":95,"d":218,"m":[99,57,61,60,60,62,64,62,61,60,58,58,55,53,52,52,50,47,47,45,44,42,41,39,38,38,35,35,33,31,30,31,33,29,29,27,28,28,26,26,24,23,20,17,16,14,11,7,5,2]},{"t":"Daru Badnaam","a":"Kamal Kahlon, Param Singh","l":"pa","y":2017,"e":8,"b":100,"g":["bhangra","dance"],"v":"bzW9fmwcmG4","h":46.2,"p":95,"d":241,"m":[80,38,42,47,52,58,70,86,89,92,94,97,99,96,95,92,89,86,84,84,84,84,82,80,80,79,78,78,77,79,78,78,76,73,70,70,68,66,62,60,55,51,46,43,37,29,15,8,4,0]},{"t":"Coka","a":"Sukh-E Muzical Doctorz, Jaani","l":"pa","y":2019,"e":8,"b":100,"g":["dance"],"v":"7lWeQs8Firo","h":30.6,"p":95,"d":181,"m":[95,62,68,73,85,91,93,92,97,96,97,99,99,99,98,97,98,96,96,97,96,97,98,94,91,90,89,88,87,86,88,86,85,88,90,92,91,88,82,72,65,62,53,45,42,35,27,19,13,3]},{"t":"Illegal Weapon","a":"Jasmine Sandlas, Garry Sandhu","l":"pa","y":2017,"e":9,"b":105,"g":["bhangra","dance"],"v":"GOkJguI8kYc","h":63.4,"p":67,"d":218,"m":[99,51,53,53,51,51,51,51,48,47,47,48,47,45,41,33,33,31,32,31,32,31,36,36,33,29,24,21,20,23,26,31,34,33,30,28,30,33,36,33,27,23,18,14,11,7,5,4,3,1]},{"t":"Kya Baat Ay","a":"Harrdy Sandhu","l":"pa","y":2018,"e":8,"b":100,"g":["dance"],"v":"G0Hx6uN2AJE","h":24.7,"p":95,"d":191,"m":[99,85,91,90,92,92,88,86,88,89,89,85,82,77,73,69,66,64,63,61,59,58,59,60,60,61,63,63,62,60,59,59,55,55,57,60,61,60,56,53,49,44,38,33,30,26,22,20,14,3]},{"t":"Bijlee Bijlee","a":"Harrdy Sandhu","l":"pa","y":2021,"e":8,"b":105,"g":["dance"],"v":"NwdQx2P_ytk","h":61.7,"p":59,"d":245,"m":[53,22,21,22,23,26,30,33,39,45,56,66,78,97,94,97,83,77,73,70,70,63,59,54,53,52,52,50,50,52,54,56,53,50,48,46,43,42,40,40,41,39,38,37,37,35,33,25,17,6]},{"t":"Naah","a":"Harrdy Sandhu","l":"pa","y":2017,"e":8,"b":102,"g":["dance"],"v":"8qs2dZO6wcc","h":10.1,"p":95,"d":202,"m":[99,60,69,66,67,67,70,70,67,67,66,67,67,66,66,65,65,65,62,59,57,57,58,57,55,53,54,54,52,52,52,52,50,50,51,50,50,47,44,43,42,42,43,39,36,30,26,17,9,4]},{"t":"Jaguar","a":"Muzical Doctorz Sukhe, Bohemia","l":"pa","y":2017,"e":8,"b":100,"g":["dance","hiphop"],"v":"i2GC06euEDE","h":21.0,"p":95,"d":164,"m":[99,60,65,77,72,73,75,73,66,61,59,56,55,56,54,55,57,57,57,59,56,57,58,58,63,58,58,56,54,55,53,53,53,53,56,55,58,57,60,61,58,58,54,47,38,31,25,20,12,5]},{"t":"Mi Amor","a":"Sharn, 40K, The Paul","l":"pa","y":2022,"e":6,"b":95,"g":["romantic","chill"],"v":"z1VdU6ZwRwY","h":20.6,"p":95,"d":226,"m":[99,47,44,52,55,63,64,65,67,64,58,58,55,56,57,54,55,59,60,63,65,62,60,57,56,51,50,50,49,49,50,53,51,52,54,49,46,44,40,38,36,34,32,24,20,14,10,6,2,0]},{"t":"Obsessed","a":"Riar Saab, Abhijay Sharma","l":"pa","y":2024,"e":6,"b":95,"g":["romantic"],"v":"ZAp3xJ7GsY8","h":9.0,"p":80,"d":183,"m":[99,51,59,67,75,66,66,55,55,54,51,52,48,49,52,54,55,52,49,45,44,40,41,42,39,38,35,35,34,32,32,31,29,29,27,29,26,27,27,25,24,21,19,17,15,14,12,9,5,1]},{"t":"Laung Laachi","a":"Mannat Noor","l":"pa","y":2018,"e":6,"b":90,"g":["wedding","romantic"],"v":"YpkJO_GrCo0","h":20.2,"p":95,"d":185,"m":[74,54,59,65,75,85,91,96,98,97,98,96,93,92,91,89,90,88,88,87,87,89,89,87,86,83,82,82,81,79,79,79,79,77,76,75,73,72,70,68,67,64,59,44,24,14,9,6,3,0]},{"t":"Angreji Beat","a":"Gippy Grewal, Yo Yo Honey Singh","l":"pa","y":2011,"e":9,"b":110,"g":["bhangra","dance"],"v":"YEf_hnXBbyI","h":136.3,"p":45,"d":247,"m":[78,43,42,33,35,39,42,50,55,60,67,68,58,61,59,53,53,50,52,47,50,55,53,57,66,77,89,95,84,94,88,95,86,77,56,50,50,50,45,47,46,41,40,33,33,31,26,20,12,6]},{"t":"Brown Rang","a":"Yo Yo Honey Singh","l":"pa","y":2011,"e":8,"b":100,"g":["dance"],"v":"MfY9YO3u7GM","h":44.5,"p":95,"d":179,"m":[99,54,56,63,54,53,56,56,57,59,59,55,59,62,65,67,67,68,63,62,61,60,55,56,50,51,52,53,61,58,62,62,59,51,51,48,43,41,38,35,32,30,30,25,21,17,17,10,6,1]},{"t":"Ishq Tera Tadpave","a":"Sukhbir","l":"pa","y":1998,"e":10,"b":120,"g":["bhangra","retro","wedding"],"v":"-99Z8E1pOrs","h":40.5,"p":95,"d":236,"m":[99,59,64,68,68,69,68,67,68,67,67,70,71,69,65,64,61,59,59,60,57,59,57,59,60,64,64,63,61,62,61,62,63,65,67,66,61,55,54,54,53,51,50,47,42,36,28,20,6,0]},{"t":"Tunak Tunak Tun","a":"Daler Mehndi","l":"pa","y":1998,"e":10,"b":125,"g":["bhangra","retro","singalong"],"v":"QoEONbxXWIQ","h":22.2,"p":95,"d":303,"m":[63,58,59,75,88,99,83,75,63,56,55,57,62,63,61,59,61,58,58,60,57,54,55,52,56,56,56,54,54,58,59,61,56,59,57,55,55,53,49,51,51,49,46,43,41,43,40,35,21,7]},{"t":"Bolo Ta Ra Ra","a":"Daler Mehndi","l":"pa","y":1995,"e":10,"b":125,"g":["bhangra","retro"],"v":"h6Ze5Hqa1wA","h":34.2,"p":64,"d":181,"m":[93,61,65,70,73,77,75,72,82,83,91,95,99,83,72,78,73,69,71,76,78,79,82,71,60,55,54,51,53,57,59,67,67,60,55,47,44,44,43,43,46,47,64,47,42,27,19,12,7,0]},{"t":"Mundian To Bach Ke","a":"Panjabi MC","l":"pa","y":2003,"e":10,"b":100,"g":["bhangra","retro"],"v":"x9WO2ieJMYk","h":31.2,"p":45,"d":237,"m":[99,46,44,48,56,47,50,51,52,41,33,28,28,27,28,28,29,32,35,33,31,28,30,31,31,31,34,35,33,28,27,25,23,22,21,21,22,22,23,22,19,18,18,16,12,10,7,5,3,0]},{"t":"Disco Deewane","a":"Nazia Hassan","l":"hi","y":1981,"e":8,"b":120,"g":["retro","dance"],"v":"QljTHgNSmHQ","h":67,"p":75,"d":241,"m":null},{"t":"Jimmy Jimmy Aaja","a":"Parvati Khan","l":"hi","y":1982,"e":7,"b":125,"g":["retro","dance"],"v":"fRSLPx0HSvw","h":24.0,"p":95,"d":186,"m":[97,79,89,88,94,90,93,91,96,99,96,98,94,97,93,95,91,91,84,85,82,83,79,82,82,81,81,77,79,77,78,75,75,71,72,69,70,66,79,63,61,56,52,48,42,37,29,23,10,0]},{"t":"Yamma Yamma","a":"Mohammed Rafi, R.D. Burman","l":"hi","y":1980,"e":7,"b":120,"g":["retro"],"v":"YeCzyMgNJXs","h":171.2,"p":77,"d":333,"m":[74,37,46,48,53,55,59,62,76,84,82,80,76,72,75,73,72,71,71,71,69,70,71,73,81,91,88,88,98,92,87,73,67,62,62,55,54,53,53,52,54,54,55,56,50,42,31,23,15,3]},{"t":"Piya Tu Ab To Aaja","a":"Asha Bhosle","l":"hi","y":1971,"e":8,"b":125,"g":["retro","dance"],"v":"pB6v5f6edEE","h":45,"p":75,"d":251,"m":null},{"t":"Dum Maro Dum","a":"Asha Bhosle","l":"hi","y":1971,"e":7,"b":110,"g":["retro"],"v":"kOrRYDJ4AuY","h":42,"p":75,"d":149,"m":null},{"t":"Mehbooba Mehbooba","a":"R.D. Burman","l":"hi","y":1975,"e":7,"b":110,"g":["retro"],"v":"ByAbV-MKDgs","h":30.5,"p":95,"d":232,"m":[99,73,84,92,89,83,81,75,71,67,66,66,66,64,63,59,58,59,56,56,55,56,56,56,59,68,62,58,55,53,53,52,52,51,51,52,53,55,52,47,43,41,37,36,32,29,24,15,8,2]},{"t":"Ek Do Teen","a":"Alka Yagnik","l":"hi","y":1988,"e":8,"b":120,"g":["retro","dance"],"v":"dx57HiK1wUg","h":51.9,"p":91,"d":449,"m":[99,51,47,52,54,57,70,74,72,68,64,59,57,49,45,42,40,40,43,44,43,37,36,35,38,38,41,42,38,32,29,27,28,27,30,37,38,34,29,30,33,31,30,30,21,15,13,10,5,0]},{"t":"Choli Ke Peeche","a":"Alka Yagnik, Ila Arun","l":"hi","y":1993,"e":8,"b":115,"g":["retro"],"v":"3OXiqmUhB70","h":160.0,"p":62,"d":324,"m":[99,74,70,65,64,64,60,55,55,54,52,52,50,48,46,46,44,42,40,40,39,39,43,48,48,48,52,51,49,42,39,36,31,29,27,28,28,26,24,22,20,19,17,16,16,15,13,11,7,2]},{"t":"Tu Cheez Badi Hai Mast Mast","a":"Udit Narayan, Kavita Krishnamurthy","l":"hi","y":1994,"e":8,"b":115,"g":["retro","singalong"],"v":"bH_8yww6BAI","h":162.1,"p":95,"d":373,"m":[65,42,46,43,44,48,54,54,52,56,57,58,61,62,63,69,67,67,69,73,78,84,96,96,97,91,86,80,75,70,67,67,70,72,81,92,90,83,71,62,55,48,38,33,29,23,18,15,9,1]},{"t":"Chaiyya Chaiyya","a":"Sukhwinder Singh, Sapna Awasthi","l":"hi","y":1998,"e":9,"b":110,"g":["retro","singalong"],"v":"UzXc_gJOC1Y","h":202.5,"p":45,"d":409,"m":[86,14,20,28,18,30,77,99,38,40,42,62,35,35,33,31,35,33,40,44,55,44,49,64,75,89,96,82,61,53,46,50,56,57,60,49,81,85,72,53,57,69,56,38,41,49,52,22,46,42]},{"t":"Kajra Re","a":"Alisha Chinai, Shankar Mahadevan, Javed Ali","l":"hi","y":2005,"e":8,"b":110,"g":["retro","dance"],"v":"4dsFQFCvVGU","h":359.0,"p":67,"d":475,"m":[99,45,39,53,54,48,58,62,53,54,55,63,55,48,43,34,31,40,38,36,40,38,35,33,30,31,28,28,31,36,36,37,36,35,39,39,52,73,90,91,82,78,70,61,46,35,25,19,14,1]},{"t":"Its The Time To Disco","a":"KK, Vasundhara Das, Shaan, Loy Mendonsa","l":"hi","y":2003,"e":8,"b":125,"g":["retro","dance"],"v":"M03GOY5eINg","h":140.6,"p":45,"d":310,"m":[56,41,47,55,58,62,66,61,58,53,50,46,43,41,41,41,39,39,38,39,40,47,64,86,94,76,63,55,49,42,36,34,36,40,50,62,53,44,35,31,27,28,27,23,20,18,17,16,11,3]},{"t":"Koi Kahe Kehta Rahe","a":"Shankar Mahadevan, KK, Shaan","l":"hi","y":2001,"e":8,"b":125,"g":["retro","singalong"],"v":"y4PoxvRSTcc","h":56.7,"p":95,"d":326,"m":[80,61,58,60,54,54,53,58,64,72,77,74,62,54,54,51,53,56,58,60,56,55,49,38,34,37,42,50,49,53,55,53,49,41,37,38,38,43,46,52,63,63,53,46,42,49,45,19,8,2]},{"t":"Bole Chudiyan","a":"Kavita Krishnamurthy, Sonu Nigam, Alka Yagnik, Udit Narayan","l":"hi","y":2001,"e":7,"b":105,"g":["retro","wedding"],"v":"IBvg3WeqP1U","h":119.2,"p":83,"d":404,"m":[99,66,58,53,49,47,45,40,37,36,34,33,33,30,29,31,36,32,28,28,28,29,27,23,20,16,16,20,24,25,28,28,24,18,16,15,16,18,16,14,13,13,14,12,13,13,7,3,0,0]},{"t":"Say Shava Shava","a":"Sunidhi Chauhan, Udit Narayan, Alka Yagnik, Sudesh Bhosle","l":"hi","y":2001,"e":8,"b":110,"g":["retro","wedding","bhangra"],"v":"ZTARlM0pCP4","h":190.3,"p":45,"d":437,"m":[99,34,28,28,29,27,30,27,28,29,35,33,28,32,37,28,26,22,24,33,45,54,67,67,62,50,38,27,30,34,39,40,45,48,44,40,31,27,30,29,24,27,26,28,28,25,21,19,15,0]},{"t":"Mehndi Laga Ke Rakhna","a":"Lata Mangeshkar, Udit Narayan","l":"hi","y":1995,"e":6,"b":100,"g":["retro","wedding"],"v":"-bNwqXvMuB8","h":37.3,"p":95,"d":281,"m":[99,55,52,52,57,60,58,55,50,49,48,46,44,43,42,40,40,39,40,42,48,47,43,42,37,34,33,34,35,35,37,39,44,46,43,40,37,33,31,30,24,23,22,20,18,16,15,11,8,2]},{"t":"Maahi Ve","a":"Udit Narayan, Sonu Nigam, Alka Yagnik, Shankar Mahadevan","l":"hi","y":2003,"e":7,"b":105,"g":["retro","wedding"],"v":"1BWdglekty0","h":213.8,"p":84,"d":372,"m":[99,78,75,70,72,72,64,55,50,40,36,38,38,34,31,29,29,32,37,44,49,51,51,53,49,43,42,43,56,66,63,59,54,53,53,45,43,46,41,35,34,32,27,23,18,14,9,7,4,0]},{"t":"Nagada Sang Dhol","a":"Shreya Ghoshal, Osman Mir","l":"hi","y":2013,"e":9,"b":130,"g":["garba","festive"],"v":"vK5E_aeBGYA","h":25.6,"p":54,"d":276,"m":[30,20,34,65,78,87,98,99,92,81,70,65,58,52,47,48,46,47,47,42,43,43,42,46,56,66,64,53,46,42,41,40,39,36,32,29,28,26,24,23,23,22,24,29,26,23,19,13,7,2]},{"t":"Dholida","a":"Janhvi Shrimankar, Kumar Gandharv","l":"hi","y":2022,"e":8,"b":125,"g":["garba","festive"],"v":"Jh_VKJAEnUY","h":18.2,"p":64,"d":168,"m":[73,63,71,76,83,89,90,96,94,98,96,95,89,86,79,74,71,68,63,62,60,59,58,56,54,55,53,56,57,61,55,53,49,47,43,39,37,36,34,34,32,30,27,27,25,22,16,7,3,1]},{"t":"Chogada","a":"Darshan Raval, Asees Kaur","l":"hi","y":2018,"e":8,"b":120,"g":["garba","festive"],"v":"yr7JFNsz5dU","h":80.5,"p":95,"d":275,"m":[99,59,59,61,64,69,70,68,66,67,68,65,64,65,64,66,71,73,75,68,62,57,54,51,51,55,63,71,67,63,57,58,54,49,46,46,48,47,47,45,43,41,39,36,30,25,17,9,4,1]},{"t":"Shubhaarambh","a":"Shruti Pathak, Divya Kumar","l":"hi","y":2013,"e":7,"b":110,"g":["garba","festive","wedding"],"v":"Gx_Rqsq1DIw","h":55.3,"p":71,"d":191,"m":[99,72,64,62,60,62,61,61,60,59,56,54,55,59,59,70,73,76,71,64,61,56,55,54,58,58,57,60,54,51,47,42,41,40,43,47,45,51,51,60,63,58,52,42,33,24,18,13,9,3]},{"t":"Udi Udi Jaye","a":"Sukhwinder Singh, Bhoomi Trivedi, Karsan Sagathia","l":"hi","y":2017,"e":8,"b":125,"g":["garba","festive"],"v":"gE3XkDXpB74","h":102.3,"p":45,"d":158,"m":[70,61,62,65,64,63,60,58,57,57,57,55,54,54,54,55,58,56,55,52,51,53,52,54,55,58,61,65,69,77,78,83,86,92,95,98,99,90,86,79,64,60,55,50,43,35,24,13,5,1]},{"t":"Dholi Taro Dhol Baaje","a":"Kavita Krishnamurthy, Vinod Rathod, Karsan Sagathia","l":"hi","y":1999,"e":8,"b":125,"g":["garba","festive","retro"],"v":"0vz8VghEItE","h":220.6,"p":95,"d":359,"m":[60,33,37,49,84,87,63,55,48,46,51,49,47,44,41,43,41,47,67,65,63,72,72,67,61,64,56,57,57,74,89,87,91,90,92,83,75,66,73,66,63,71,78,77,71,59,50,39,25,8]},{"t":"Maine Payal Hai Chhankai","a":"Falguni Pathak","l":"gu","y":1999,"e":7,"b":120,"g":["garba","retro"],"v":"Rbz1qFlRL_Y","h":80.8,"p":95,"d":276,"m":[99,47,46,42,44,45,44,43,41,40,35,34,35,34,36,35,34,33,33,32,31,33,33,33,34,32,30,27,27,27,25,24,25,23,23,23,22,21,21,20,19,18,17,15,14,15,13,12,4,1]},{"t":"Deva Shree Ganesha","a":"Ajay Gogavale","l":"hi","y":2012,"e":9,"b":120,"g":["ganpati","festive"],"v":"RYqJ5w-GrfM","h":276.9,"p":50,"d":332,"m":[94,71,74,73,69,68,62,57,55,54,50,49,51,51,48,49,49,46,46,44,42,42,39,39,37,33,28,26,24,24,23,23,23,22,21,21,19,21,25,34,51,76,97,94,88,84,74,60,40,13]},{"t":"Morya Re","a":"Shankar Mahadevan","l":"hi","y":2006,"e":9,"b":120,"g":["ganpati","festive"],"v":"8jff2wz3Hpk","h":83.8,"p":95,"d":268,"m":[99,51,47,48,48,53,58,64,65,69,72,81,90,87,83,85,90,94,96,91,84,75,72,65,63,61,64,62,65,64,69,73,75,72,65,59,55,54,52,50,44,44,38,31,28,25,21,16,10,2]},{"t":"Gajanana","a":"Sukhwinder Singh","l":"hi","y":2015,"e":8,"b":110,"g":["ganpati","festive"],"v":"KJF8t-BWVRM","h":19.3,"p":82,"d":213,"m":[99,78,77,75,73,75,77,77,77,75,70,67,64,65,63,60,57,56,55,53,49,47,46,45,45,46,45,44,43,41,41,39,38,37,35,34,33,31,30,29,29,29,26,25,22,20,17,13,5,1]},{"t":"Zingaat","a":"Ajay-Atul","l":"mr","y":2016,"e":10,"b":135,"g":["dance","wedding","singalong"],"v":"2gcsgfzqN8k","h":30.5,"p":95,"d":232,"m":[99,65,66,69,69,71,72,68,69,66,66,65,64,63,61,59,57,56,53,54,52,52,53,53,54,56,56,55,53,50,50,48,46,45,45,45,44,43,43,45,43,41,37,35,32,30,23,17,9,0]},{"t":"Shantabai","a":"Sanjay Londhe","l":"mr","y":2016,"e":9,"b":125,"g":["dance"],"v":"fvWl5e0vYW8","h":146.8,"p":58,"d":240,"m":[99,85,89,87,87,88,84,81,71,68,66,63,63,65,68,63,66,65,63,64,63,68,62,62,63,68,62,69,70,63,66,78,87,80,70,60,61,59,62,59,51,49,44,43,40,41,36,22,14,8]},{"t":"Kombdi Palali","a":"Anand Shinde, Vaishali Samant","l":"mr","y":2006,"e":9,"b":130,"g":["dance","retro"],"v":"2KaDL9TSja0","h":134.4,"p":95,"d":310,"m":[94,42,47,46,54,54,53,50,51,48,49,51,46,43,43,44,52,55,58,64,70,78,92,94,95,92,85,80,80,67,65,63,73,77,86,96,91,89,78,78,73,65,57,56,54,41,31,22,15,4]},{"t":"Aika Dajiba","a":"Vaishali Samant","l":"mr","y":2004,"e":8,"b":120,"g":["dance","retro"],"v":"4GowgfCbYmM","h":149.2,"p":45,"d":210,"m":[93,72,83,86,86,79,76,72,68,67,65,64,63,60,59,61,94,63,68,86,68,65,63,60,58,58,58,58,59,60,60,65,69,68,74,84,96,99,99,95,87,80,71,59,48,43,36,27,19,4]},{"t":"Wajle Ki Bara","a":"Bela Shende","l":"mr","y":2010,"e":7,"b":115,"g":["lavani"],"v":"qGkmaTglxco","h":34.3,"p":95,"d":259,"m":[83,76,72,73,74,81,83,93,97,99,90,87,77,77,82,85,86,78,78,76,75,71,71,65,68,69,75,78,72,76,75,72,64,64,63,62,66,60,60,59,57,55,52,51,46,40,35,27,18,4]},{"t":"Apsara Aali","a":"Bela Shende","l":"mr","y":2010,"e":6,"b":105,"g":["lavani"],"v":"OY5vL4aXMAo","h":43.0,"p":50,"d":250,"m":[61,57,58,64,68,74,73,74,80,90,93,98,89,76,68,64,59,52,49,49,49,49,50,52,52,54,56,58,57,58,59,57,58,60,59,56,54,50,45,43,41,37,33,30,27,23,16,7,3,1]},{"t":"Chandra","a":"Shreya Ghoshal","l":"mr","y":2022,"e":7,"b":110,"g":["lavani","dance"],"v":"r6tU3GvJ5so","h":93.8,"p":95,"d":342,"m":[90,51,45,44,45,45,47,51,57,62,59,64,68,81,94,98,99,92,90,90,88,85,80,77,71,67,66,66,65,67,67,66,65,65,68,69,68,67,67,65,58,55,52,45,38,32,23,11,5,0]},{"t":"Baharla Ha Madhumas","a":"Ajay Gogavale, Shreya Ghoshal","l":"mr","y":2023,"e":7,"b":110,"g":["wedding"],"v":"Eipq_IC7NYA","h":21.8,"p":53,"d":238,"m":[88,60,65,74,81,91,99,98,87,81,73,71,65,60,54,52,51,51,51,49,46,44,41,39,38,40,40,42,42,42,43,43,42,43,43,44,46,45,46,45,41,36,31,24,17,12,8,4,2,0]},{"t":"Sairat Zaala Ji","a":"Ajay-Atul, Chinmayi","l":"mr","y":2016,"e":5,"b":95,"g":["romantic"],"v":"ZL3MnrnLLpo","h":179.0,"p":93,"d":377,"m":[83,42,42,40,41,42,48,53,50,54,54,56,48,51,48,47,47,48,47,52,54,62,64,84,96,98,97,88,82,78,71,64,59,62,59,60,55,53,54,74,82,82,74,68,55,45,32,19,11,3]},{"t":"Yad Lagla","a":"Ajay-Atul","l":"mr","y":2016,"e":4,"b":85,"g":["romantic","chill"],"v":"VmU1ZsXUbG0","h":157.5,"p":95,"d":319,"m":[99,54,43,39,40,43,39,38,42,42,39,39,32,33,33,35,33,36,41,42,42,41,42,49,61,73,77,70,62,54,44,43,47,45,55,52,60,51,45,38,33,30,30,51,35,38,44,36,25,10]},{"t":"Gulabi Saadi","a":"Sanju Rathod","l":"mr","y":2024,"e":8,"b":105,"g":["dance","wedding"],"v":"B_6d3RBiEN0","h":29.6,"p":45,"d":226,"m":[99,68,67,68,71,71,64,67,65,62,57,54,48,42,38,35,33,32,31,30,30,28,30,30,28,28,27,25,23,22,22,23,22,21,21,22,19,19,18,18,17,15,15,12,10,9,7,5,2,0]},{"t":"Lallati Bhandar","a":"Ajay Gogavale","l":"mr","y":2010,"e":8,"b":120,"g":["festive"],"v":"6qwOQe2BiYY","h":88.6,"p":95,"d":302,"m":[99,71,69,68,66,57,56,55,52,49,46,43,40,39,38,39,39,40,37,34,33,33,36,39,34,31,29,27,27,28,25,25,24,24,24,24,24,24,22,21,22,21,19,19,16,14,14,12,9,2]},{"t":"Mauli Mauli","a":"Ajay-Atul","l":"mr","y":2014,"e":8,"b":115,"g":["festive","ganpati"],"v":"m-EsAtQyrTw","h":209.4,"p":82,"d":302,"m":[99,42,43,46,47,48,50,50,48,45,44,44,43,43,42,40,40,40,41,41,44,45,46,50,51,52,49,46,47,47,46,42,43,46,44,47,50,53,53,48,47,47,45,42,39,39,36,28,18,7]},{"t":"Naatu Naatu","a":"Rahul Sipligunj, Kaala Bhairava","l":"te","y":2022,"e":10,"b":140,"g":["dance","singalong"],"v":"4_eEgJhsBMo","h":91.5,"p":87,"d":275,"m":[99,56,51,47,48,51,44,41,39,38,36,37,34,32,30,28,30,34,36,33,26,24,23,22,24,24,23,26,25,24,21,19,20,20,18,19,18,20,25,28,28,24,19,13,11,10,10,9,8,3]},{"t":"Why This Kolaveri Di","a":"Dhanush","l":"ta","y":2011,"e":7,"b":100,"g":["singalong"],"v":"YR12Z8f1Dh8","h":182.3,"p":50,"d":249,"m":[99,56,55,49,49,42,43,43,43,44,41,41,42,42,44,48,51,48,47,46,48,52,49,49,55,57,48,48,49,52,55,59,65,72,79,80,85,80,85,88,86,76,65,60,55,48,37,25,10,1]},{"t":"Arabic Kuthu","a":"Anirudh Ravichander, Jonita Gandhi","l":"ta","y":2022,"e":9,"b":120,"g":["dance","kuthu"],"v":"KUN5Uf9mObQ","h":54.4,"p":72,"d":282,"m":[99,48,47,46,46,41,42,45,45,42,41,45,45,44,41,37,31,30,29,28,27,27,26,28,28,28,29,26,27,25,25,23,23,22,23,23,22,20,17,16,16,17,17,16,16,12,9,7,4,0]},{"t":"Vaathi Coming","a":"Anirudh Ravichander","l":"ta","y":2021,"e":9,"b":125,"g":["dance","kuthu"],"v":"nIYZ4nbWq7w","h":157.3,"p":45,"d":257,"m":[99,35,30,32,30,34,27,28,26,29,30,29,27,25,22,23,26,31,37,36,36,34,30,29,28,27,27,31,30,30,32,37,41,43,35,30,22,21,22,22,27,28,29,25,21,19,23,22,14,3]},{"t":"Rowdy Baby","a":"Dhanush, Dhee","l":"ta","y":2018,"e":9,"b":125,"g":["dance","kuthu"],"v":"D0SLkwN4gCk","h":77,"p":75,"d":275,"m":null},{"t":"Kaavaalaa","a":"Shilpa Rao, Anirudh Ravichander","l":"ta","y":2023,"e":8,"b":120,"g":["dance"],"v":"lM8h5Mm6ODo","h":32.8,"p":95,"d":174,"m":[99,51,48,48,50,44,44,43,42,40,42,44,45,43,45,43,42,42,40,40,39,39,38,38,33,32,32,30,29,29,29,28,28,30,32,32,31,31,31,30,29,25,23,23,21,19,17,13,9,1]},{"t":"Hukum","a":"Anirudh Ravichander","l":"ta","y":2023,"e":9,"b":130,"g":["dance","mass"],"v":"gB2zKZxESTg","h":63.6,"p":47,"d":205,"m":[95,49,54,53,59,67,61,76,74,82,75,74,75,80,78,79,89,93,99,94,83,77,71,66,60,55,55,56,58,54,56,60,59,61,66,65,64,71,75,81,76,63,59,55,51,41,33,25,17,4]},{"t":"Aalaporaan Thamizhan","a":"A.R. Rahman, Kailash Kher","l":"ta","y":2017,"e":8,"b":125,"g":["dance","mass"],"v":"UN7HgzJsFZA","h":193.0,"p":48,"d":375,"m":[91,45,40,35,32,31,34,34,30,28,27,32,31,30,21,17,14,15,14,17,15,16,26,31,37,61,86,99,85,73,58,43,32,25,21,19,22,19,20,18,21,21,27,24,17,12,7,9,6,0]},{"t":"Appadi Podu","a":"KK, Anuradha Sriram","l":"ta","y":2004,"e":9,"b":130,"g":["dance","kuthu","retro"],"v":"i1BqRYMFS08","h":89.2,"p":78,"d":285,"m":[99,70,70,70,66,65,63,58,57,51,49,48,51,54,61,75,89,88,76,66,62,58,56,56,53,53,53,52,47,40,39,39,43,43,45,40,39,39,38,38,33,30,26,23,21,17,15,12,9,3]},{"t":"Butta Bomma","a":"Armaan Malik","l":"te","y":2020,"e":6,"b":100,"g":["romantic","singalong"],"v":"2mDCVzruYzQ","h":29.0,"p":60,"d":194,"m":[99,43,40,38,37,38,38,39,39,42,43,45,43,40,37,35,30,29,29,28,27,24,23,23,23,22,23,23,24,24,25,26,27,28,28,29,30,27,25,23,20,18,13,11,10,9,8,5,3,1]},{"t":"Ramuloo Ramulaa","a":"Anurag Kulkarni, Mangli","l":"te","y":2020,"e":8,"b":120,"g":["dance","mass"],"v":"Bg8Yb9zGYyA","h":69.2,"p":95,"d":274,"m":[99,32,35,37,36,41,43,39,37,37,37,36,42,50,52,48,46,43,42,36,34,31,30,32,33,33,35,36,36,36,35,34,34,40,43,38,34,30,30,31,30,27,25,24,20,16,13,9,5,1]},{"t":"Oo Antava","a":"Indravathi Chauhan","l":"te","y":2021,"e":8,"b":110,"g":["dance"],"v":"u_wB6byrl5k","h":16.3,"p":95,"d":229,"m":[99,49,53,60,66,75,70,68,71,65,65,59,55,52,58,64,66,60,57,59,61,59,50,50,48,46,47,44,49,52,51,50,46,44,41,36,39,44,56,52,45,44,43,44,42,35,25,16,10,3]},{"t":"Srivalli","a":"Sid Sriram","l":"te","y":2021,"e":6,"b":95,"g":["romantic"],"v":"txHO7PLGE3o","h":33.1,"p":45,"d":351,"m":[99,43,40,45,49,60,72,61,52,40,34,30,30,31,33,35,37,38,38,34,31,36,47,40,31,25,24,25,29,32,30,30,29,24,22,19,20,20,22,22,22,20,17,20,24,17,13,8,5,0]},{"t":"Saami Saami","a":"Mounika Yadav","l":"te","y":2021,"e":8,"b":115,"g":["dance"],"v":"vdY5SFZBgnk","h":56.2,"p":95,"d":194,"m":[99,55,47,40,35,33,31,30,30,29,29,27,26,24,23,22,22,22,24,23,22,20,20,20,19,18,18,18,19,18,19,20,19,19,18,18,17,16,15,14,15,15,14,11,10,8,7,4,2,1]},{"t":"Kurchi Madathapetti","a":"Sahithi Chaganti, Sri Krishna","l":"te","y":2024,"e":9,"b":135,"g":["dance","mass"],"v":"gh3FyLT7WVg","h":43.3,"p":95,"d":283,"m":[99,55,50,47,51,54,56,71,81,82,88,86,81,83,82,74,73,72,72,74,70,67,67,68,63,70,72,72,73,71,79,91,84,81,67,63,66,69,64,56,48,46,43,41,40,33,28,12,3,0]},{"t":"Ringa Ringa","a":"Priya Hemesh, Devi Sri Prasad","l":"te","y":2009,"e":9,"b":130,"g":["dance","mass","retro"],"v":"2OhhFkF3MqQ","h":15.7,"p":95,"d":295,"m":[99,56,60,70,66,64,59,53,52,49,48,47,46,43,42,44,44,42,39,37,37,39,43,43,42,35,33,33,34,39,41,41,41,51,54,48,50,45,37,37,40,41,39,42,43,40,37,29,21,6]},{"t":"Jimikki Kammal","a":"Vineeth Sreenivasan, Ranjith Unni","l":"ml","y":2017,"e":8,"b":125,"g":["dance","singalong"],"v":"FXiaIH49oAU","h":99.4,"p":84,"d":195,"m":[99,84,83,80,79,77,77,76,75,75,76,71,69,66,64,62,59,57,56,56,58,59,58,58,59,59,59,60,62,63,61,59,58,56,53,53,51,51,50,49,48,48,45,41,37,34,28,22,15,5]},{"t":"Uptown Funk","a":"Mark Ronson, Bruno Mars","l":"en","y":2014,"e":9,"b":115,"g":["dance","singalong"],"v":"OPf0YbXqDm0","h":79.3,"p":75,"d":271,"m":[99,59,58,58,53,51,48,45,43,43,43,43,43,40,36,35,35,38,35,29,27,25,24,23,23,23,22,20,19,18,17,17,16,16,15,16,16,14,14,12,10,9,9,9,7,6,5,3,2,0]},{"t":"Blinding Lights","a":"The Weeknd","l":"en","y":2019,"e":8,"b":171,"g":["dance","pop"],"v":"4NRXx6U8ABQ","h":134.8,"p":78,"d":263,"m":[99,32,36,40,46,54,62,66,70,67,66,64,66,69,75,76,77,72,67,67,65,62,61,61,63,66,75,82,77,67,62,60,59,59,59,59,55,50,49,46,44,42,35,22,15,11,7,4,2,0]},{"t":"Levitating","a":"Dua Lipa","l":"en","y":2020,"e":8,"b":103,"g":["dance","pop"],"v":"TUVcZfQe-Kw","h":16.5,"p":95,"d":231,"m":[99,63,64,62,62,66,69,70,64,60,58,55,53,52,53,55,54,52,54,58,59,56,54,54,57,62,60,56,55,51,49,48,45,44,43,43,44,46,45,43,41,39,35,31,21,11,6,3,1,0]},{"t":"Dont Start Now","a":"Dua Lipa","l":"en","y":2019,"e":8,"b":124,"g":["dance","pop"],"v":"oygrmJFKYZY","h":56.2,"p":86,"d":182,"m":[99,48,47,55,49,43,43,40,40,40,40,39,39,40,39,38,39,38,41,41,39,37,37,35,33,37,34,30,30,29,28,27,27,28,28,26,25,23,24,23,24,26,25,24,22,19,18,15,10,0]},{"t":"Shape of You","a":"Ed Sheeran","l":"en","y":2017,"e":7,"b":96,"g":["pop","singalong"],"v":"JGwWNGJdvx8","h":35.0,"p":95,"d":264,"m":[99,64,68,69,68,67,66,65,63,62,61,60,59,60,57,55,53,53,53,52,52,53,53,51,51,49,48,46,47,46,45,43,42,42,40,40,40,39,37,35,34,33,32,33,34,34,17,7,3,0]},{"t":"Despacito","a":"Luis Fonsi, Daddy Yankee","l":"en","y":2017,"e":8,"b":89,"g":["dance","singalong"],"v":"kJQP7kiw5Fk","h":71.3,"p":95,"d":282,"m":[69,49,53,58,63,70,73,75,76,78,79,81,82,85,92,99,91,84,83,84,85,88,93,96,93,92,91,88,84,83,84,81,75,72,70,67,66,64,64,62,59,56,52,48,42,27,18,11,7,1]},{"t":"Taki Taki","a":"DJ Snake, Selena Gomez, Ozuna, Cardi B","l":"en","y":2018,"e":8,"b":96,"g":["dance"],"v":"ixkoVwKQaJg","h":16.6,"p":66,"d":232,"m":[99,50,52,57,62,67,68,64,60,53,50,48,47,46,44,42,39,38,37,38,38,40,42,45,45,46,47,45,43,45,45,41,39,39,45,53,58,58,56,51,49,49,48,44,40,28,19,13,7,0]},{"t":"Lean On","a":"Major Lazer, DJ Snake, MO","l":"en","y":2015,"e":8,"b":98,"g":["edm"],"v":"YqeW9_5kURI","h":33.8,"p":95,"d":179,"m":[95,70,74,76,78,80,80,84,88,87,88,90,92,97,98,91,83,78,75,72,70,69,69,69,69,70,69,68,68,67,66,65,63,62,59,59,61,61,58,54,52,48,44,40,36,33,29,26,20,7]},{"t":"Titanium","a":"David Guetta, Sia","l":"en","y":2011,"e":8,"b":126,"g":["edm","singalong"],"v":"JRfuAukYTKg","h":45,"p":75,"d":246,"m":null},{"t":"Animals","a":"Martin Garrix","l":"en","y":2013,"e":10,"b":128,"g":["edm"],"v":"gCYcHz2k5x0","h":82.5,"p":45,"d":192,"m":[33,17,23,22,25,27,28,31,33,36,41,45,49,49,52,53,55,56,56,57,60,70,80,94,95,78,68,62,59,54,52,50,47,44,42,42,40,38,38,40,39,35,31,27,25,22,21,20,18,4]},{"t":"Wake Me Up","a":"Avicii","l":"en","y":2013,"e":8,"b":124,"g":["edm","singalong"],"v":"IcrbM1l_BoI","h":63.5,"p":95,"d":273,"m":[99,60,60,60,60,61,63,63,62,60,60,60,61,64,64,62,61,60,57,55,53,52,52,52,52,53,52,53,52,51,52,52,52,49,47,46,48,49,44,37,36,35,32,28,26,22,15,8,3,0]},{"t":"Levels","a":"Avicii","l":"en","y":2011,"e":9,"b":126,"g":["edm"],"v":"yMsKK0zNT_4","h":144.2,"p":55,"d":203,"m":[14,30,51,65,65,66,71,79,79,76,76,73,71,72,75,76,77,77,74,77,82,75,71,67,66,68,69,73,78,83,85,82,78,77,81,87,93,99,98,96,97,96,89,80,72,68,62,53,42,34]},{"t":"Dont You Worry Child","a":"Swedish House Mafia","l":"en","y":2012,"e":8,"b":129,"g":["edm","singalong"],"v":"1y6smkh6c-0","h":44.9,"p":95,"d":335,"m":[99,57,64,68,70,72,75,76,80,78,78,77,75,76,81,78,74,72,68,66,65,67,66,68,67,66,64,65,64,63,64,66,68,67,64,61,58,55,50,45,39,35,29,26,21,17,13,10,6,0]},{"t":"Turn Down for What","a":"DJ Snake, Lil Jon","l":"en","y":2013,"e":10,"b":100,"g":["edm","hiphop"],"v":"HMUDVMiITOU","h":67.4,"p":71,"d":217,"m":[80,76,82,89,96,96,83,81,83,88,73,67,69,74,73,71,78,88,93,79,74,72,71,67,61,58,57,55,53,53,51,48,44,40,38,37,38,35,33,32,31,26,20,17,14,12,9,7,7,4]},{"t":"Gasolina","a":"Daddy Yankee","l":"en","y":2004,"e":9,"b":96,"g":["dance","retro"],"v":"qt7-eaq-4C0","h":86,"p":75,"d":307,"m":null},{"t":"One Dance","a":"Drake, Wizkid, Kyla","l":"en","y":2016,"e":6,"b":104,"g":["chill","pop"],"v":"FOqKN-ouAUE","h":92.5,"p":45,"d":175,"m":[88,40,42,39,40,37,36,33,33,31,30,29,29,28,30,29,29,28,29,29,32,33,39,42,59,69,93,98,99,80,74,59,46,34,30,26,26,23,23,20,20,17,17,14,12,10,9,7,4,0]},{"t":"Starboy","a":"The Weeknd, Daft Punk","l":"en","y":2016,"e":7,"b":186,"g":["pop"],"v":"34Na4j8AVgA","h":52.8,"p":95,"d":274,"m":[75,17,19,23,28,36,42,51,64,80,92,99,92,91,90,88,87,86,88,86,84,82,80,78,77,76,75,74,73,74,73,73,76,78,77,75,74,68,65,63,62,61,58,54,49,44,38,32,24,6]},{"t":"Party Rock Anthem","a":"LMFAO","l":"en","y":2011,"e":10,"b":130,"g":["dance","edm"],"v":"KQ6zr6kCPj8","h":216.1,"p":95,"d":376,"m":[69,14,15,19,18,19,21,27,28,30,32,39,48,52,54,65,64,61,66,69,59,56,55,55,55,59,59,63,73,96,87,75,66,62,55,57,55,54,61,73,56,50,51,60,67,51,43,32,16,0]},{"t":"Timber","a":"Pitbull, Kesha","l":"en","y":2013,"e":9,"b":130,"g":["dance"],"v":"hHUbLv4ThOo","h":62.5,"p":95,"d":215,"m":[99,80,78,75,72,71,71,70,70,71,70,69,70,67,64,62,61,60,59,58,58,58,58,59,58,58,59,60,62,61,58,55,52,50,49,48,48,48,48,47,47,45,42,40,37,36,34,34,23,3]},{"t":"Give Me Everything","a":"Pitbull, Ne-Yo","l":"en","y":2011,"e":9,"b":129,"g":["dance"],"v":"EPo5wWmKEaI","h":35.4,"p":95,"d":267,"m":[99,56,60,64,64,63,65,73,80,75,66,61,58,60,65,73,71,63,56,53,52,53,55,58,59,54,51,50,49,48,50,53,47,44,42,40,40,40,42,43,41,39,37,33,28,24,17,11,5,0]},{"t":"Yeah!","a":"Usher, Lil Jon, Ludacris","l":"en","y":2004,"e":9,"b":105,"g":["hiphop","retro"],"v":"GxBSyx85Kp8","h":73.9,"p":95,"d":253,"m":[99,52,46,42,39,37,36,35,36,37,37,39,37,36,34,32,30,29,28,27,28,28,30,30,30,28,27,27,26,27,26,25,25,23,23,22,22,20,18,17,17,17,16,16,15,14,12,9,6,1]},{"t":"In Da Club","a":"50 Cent","l":"en","y":2003,"e":8,"b":90,"g":["hiphop","retro"],"v":"5qm8PH4xAss","h":37.7,"p":95,"d":248,"m":[99,45,47,47,51,53,55,59,65,71,73,70,68,61,57,56,55,53,53,52,51,51,50,50,50,48,48,47,47,46,44,43,41,39,37,36,35,35,34,32,31,30,28,24,21,17,12,8,4,0]},{"t":"Calm Down","a":"Rema, Selena Gomez","l":"en","y":2022,"e":6,"b":107,"g":["chill","pop"],"v":"WcIcVapfqXw","h":98.8,"p":68,"d":240,"m":[99,52,53,55,57,56,56,56,54,54,52,52,51,51,51,53,54,55,57,62,60,62,69,64,63,61,61,58,52,48,45,41,39,39,39,39,38,36,36,34,34,33,31,28,25,22,16,11,6,0]},{"t":"Espresso","a":"Sabrina Carpenter","l":"en","y":2024,"e":7,"b":104,"g":["pop"],"v":"eVli-tstM5E","h":130.7,"p":54,"d":201,"m":[99,48,50,59,68,74,85,74,72,68,64,63,64,62,61,62,62,65,67,72,75,75,76,78,71,71,69,67,67,66,69,67,69,75,82,81,78,75,72,68,64,65,59,54,45,37,25,13,6,0]},{"t":"APT.","a":"ROSE, Bruno Mars","l":"en","y":2024,"e":8,"b":149,"g":["pop","singalong"],"v":"ekr2nIex040","h":22.4,"p":94,"d":174,"m":[99,53,53,51,49,48,47,49,51,53,54,53,49,47,45,44,42,44,43,44,48,48,46,45,38,36,34,34,34,33,32,31,29,29,27,28,29,30,31,29,29,26,24,22,18,16,14,11,9,2]},{"t":"Die With A Smile","a":"Lady Gaga, Bruno Mars","l":"en","y":2024,"e":4,"b":79,"g":["romantic","chill"],"v":"kPa7bsKwL-c","h":28.4,"p":95,"d":253,"m":[99,58,63,60,61,64,68,70,72,71,64,60,57,55,52,50,49,48,47,47,47,48,48,50,49,47,46,44,43,41,40,39,39,41,43,37,33,30,27,27,25,24,24,22,20,17,15,11,8,0]},{"t":"Perfect","a":"Ed Sheeran","l":"en","y":2017,"e":3,"b":95,"g":["romantic","chill"],"v":"2Vv-BfVoq4g","h":37.5,"p":95,"d":282,"m":[99,42,50,58,71,69,65,64,64,64,62,59,59,58,58,57,56,55,54,53,51,52,51,49,49,49,50,48,47,47,48,48,46,45,44,44,42,40,39,37,36,35,33,32,29,26,22,16,7,0]},{"t":"Mr. Brightside","a":"The Killers","l":"en","y":2004,"e":9,"b":148,"g":["singalong","retro"],"v":"gGdGFtwCNBE","h":52.7,"p":95,"d":228,"m":[99,60,67,65,63,62,63,63,63,61,60,62,63,67,70,70,68,66,61,59,55,55,57,56,55,55,53,54,53,52,51,51,52,54,56,57,55,52,48,44,40,37,37,34,29,27,25,21,14,3]},{"t":"Dancing Queen","a":"ABBA","l":"en","y":1976,"e":8,"b":101,"g":["retro","singalong"],"v":"xFrGuyw1V8s","h":91.2,"p":95,"d":233,"m":[99,45,49,51,60,62,59,53,50,46,46,46,46,45,45,46,47,47,50,53,53,53,56,57,56,49,44,41,38,38,37,37,38,38,41,41,42,44,49,48,44,37,32,27,24,20,16,12,6,0]},{"t":"September","a":"Earth, Wind & Fire","l":"en","y":1978,"e":8,"b":126,"g":["retro","dance"],"v":"Gs069dndIYk","h":41.2,"p":83,"d":216,"m":[99,48,52,53,57,58,52,47,46,45,48,52,55,50,45,43,40,37,35,34,32,31,32,32,31,32,32,31,29,28,27,26,25,25,25,23,23,21,19,19,18,17,16,14,12,10,8,6,4,0]},{"t":"Billie Jean","a":"Michael Jackson","l":"en","y":1983,"e":8,"b":117,"g":["retro","dance"],"v":"Zi_XLOBDo_Y","h":75.0,"p":95,"d":296,"m":[99,49,49,50,53,57,53,49,47,47,48,48,52,53,57,61,52,46,44,44,43,41,43,45,42,42,42,43,43,40,37,36,34,33,32,34,32,28,25,22,20,19,17,16,14,12,10,8,5,0]},{"t":"SICKO MODE","a":"Travis Scott","l":"en","y":2018,"e":8,"b":155,"g":["hiphop"],"v":"6ONRf7h3Mdk","h":56.1,"p":95,"d":323,"m":[99,29,29,30,31,36,39,44,57,74,76,64,56,51,50,47,46,49,50,46,49,52,44,39,39,40,41,45,48,48,54,54,47,41,38,35,34,35,33,33,41,43,35,32,26,25,21,15,8,0]},{"t":"HUMBLE.","a":"Kendrick Lamar","l":"en","y":2017,"e":8,"b":150,"g":["hiphop"],"v":"tvTRZJ-4EyI","h":101.0,"p":45,"d":184,"m":[92,69,82,96,99,89,81,74,71,70,69,69,68,72,77,80,81,79,77,74,72,68,66,67,68,70,71,77,86,96,92,83,75,68,65,60,58,55,51,48,43,39,37,35,34,28,24,16,8,0]},{"t":"Not Like Us","a":"Kendrick Lamar","l":"en","y":2024,"e":8,"b":101,"g":["hiphop"],"v":"T6eK-2OQtew","h":52.8,"p":54,"d":274,"m":[99,51,50,45,43,47,50,51,53,53,61,66,61,50,43,41,40,38,36,35,35,37,38,38,40,43,43,38,35,31,28,26,25,25,25,25,24,23,24,24,21,17,15,15,15,14,10,7,4,1]},{"t":"Cheap Thrills","a":"Sia","l":"en","y":2016,"e":8,"b":90,"g":["dance","pop"],"v":"31crA53Dgu0","h":28.5,"p":95,"d":218,"m":[99,66,69,71,73,72,69,69,68,66,63,60,57,55,54,53,53,53,53,52,50,50,48,47,46,45,43,42,42,40,39,38,37,36,36,36,35,33,32,31,29,28,27,26,24,21,18,15,11,0]},{"t":"Closer","a":"The Chainsmokers, Halsey","l":"en","y":2016,"e":6,"b":95,"g":["pop","chill"],"v":"0zGcUoRlhmw","h":62.2,"p":95,"d":247,"m":[99,66,74,70,69,70,73,74,75,77,76,77,80,82,90,92,86,76,74,72,70,69,70,71,69,67,67,67,65,64,63,60,57,55,55,56,55,54,55,58,57,59,60,56,48,41,34,28,14,2]},{"t":"Faded","a":"Alan Walker","l":"en","y":2015,"e":6,"b":90,"g":["edm","chill"],"v":"60ItHLz5WEA","h":40.6,"p":95,"d":213,"m":[99,69,72,73,73,72,72,73,73,73,75,76,78,80,78,77,76,76,74,72,70,68,67,66,65,64,63,64,64,64,65,65,66,67,67,66,65,62,60,59,58,55,52,49,46,44,41,33,19,4]},{"t":"Heat Waves","a":"Glass Animals","l":"en","y":2020,"e":6,"b":81,"g":["chill","pop"],"v":"mRD0-GxqHVo","h":92.4,"p":95,"d":236,"m":[99,47,52,57,61,65,67,64,62,59,58,56,54,53,54,56,58,59,60,62,62,61,66,69,67,62,59,57,56,54,53,53,54,54,55,54,50,48,47,45,43,38,32,26,21,16,10,7,3,0]},{"t":"Beggin","a":"Maneskin","l":"en","y":2021,"e":8,"b":134,"g":["dance","singalong"],"v":"Xg72z08aTXY","h":53.6,"p":95,"d":214,"m":[99,44,47,48,53,54,54,54,56,58,58,59,61,64,71,71,63,58,55,53,52,48,49,50,50,51,53,52,52,50,49,48,45,40,38,37,37,38,40,40,36,34,29,27,27,27,22,15,12,2]},{"t":"Mere Gully Mein","a":"DIVINE, Naezy","l":"hi","y":2015,"e":7,"b":95,"g":["hiphop"],"v":"pGmbUdf6lEM","h":51.1,"p":95,"d":177,"m":[99,73,66,64,64,67,62,61,56,57,56,53,52,52,53,52,51,49,48,48,50,49,47,45,44,44,41,38,39,39,40,41,40,42,43,44,43,43,41,40,39,34,33,31,28,27,15,6,2,0]},{"t":"Apna Time Aayega","a":"Ranveer Singh, DIVINE","l":"hi","y":2019,"e":8,"b":90,"g":["hiphop","singalong"],"v":"jFGKJBPFdUA","h":16.3,"p":95,"d":131,"m":[98,77,85,93,94,98,97,89,88,84,82,82,82,81,82,84,84,83,79,75,73,73,74,75,77,82,85,88,90,92,91,86,85,81,77,73,70,70,66,63,61,54,48,42,36,26,14,8,3,0]},{"t":"Mirchi","a":"DIVINE, MC Altaf, Stylo G","l":"hi","y":2021,"e":8,"b":100,"g":["hiphop"],"v":"w5Aioq5VYF0","h":57.4,"p":69,"d":198,"m":[99,65,64,61,57,58,58,58,57,57,56,51,48,48,46,45,41,39,37,36,35,34,33,33,34,36,36,34,29,26,26,25,25,24,23,21,20,19,19,19,19,18,16,15,14,14,13,10,6,1]},{"t":"Kaam 25","a":"DIVINE","l":"hi","y":2019,"e":7,"b":90,"g":["hiphop"],"v":"ATf05n5LBHQ","h":20.7,"p":95,"d":162,"m":[99,75,75,76,72,68,68,69,70,74,76,75,73,69,68,68,68,66,66,65,64,63,61,61,62,65,69,72,74,72,68,66,66,66,66,66,64,65,64,61,54,48,45,43,40,37,30,19,10,3]},{"t":"Machayenge","a":"Emiway Bantai","l":"hi","y":2019,"e":8,"b":100,"g":["hiphop"],"v":"zaCbuB3w0kg","h":32.0,"p":95,"d":243,"m":[99,61,65,67,70,73,82,86,92,90,93,91,86,79,81,85,91,89,87,84,84,82,80,77,77,77,76,74,78,80,86,84,83,79,77,74,71,67,67,67,66,57,49,45,39,26,13,7,2,0]},{"t":"Basti Ka Hasti","a":"MC Stan","l":"hi","y":2022,"e":7,"b":90,"g":["hiphop"],"v":"GbXtCRCT0Ig","h":22.5,"p":47,"d":204,"m":[99,67,81,77,77,76,81,79,94,89,64,65,62,61,52,50,50,44,39,38,42,43,44,45,54,55,60,56,55,52,50,47,46,44,40,43,46,43,52,58,64,63,51,33,32,29,27,17,9,4]},{"t":"52 Gaj Ka Daman","a":"Renuka Panwar","l":"hr","y":2020,"e":9,"b":115,"g":["dance"],"v":"CZt-rVn2BJs","h":32.4,"p":56,"d":191,"m":[47,33,34,35,40,46,51,60,73,87,99,95,85,77,74,68,65,61,59,58,57,56,55,54,52,51,50,48,47,47,46,45,42,40,39,37,36,36,36,36,34,33,31,29,27,21,13,8,3,1]},{"t":"Teri Aankhya Ka Yo Kajal","a":"Sapna Choudhary","l":"hr","y":2017,"e":9,"b":110,"g":["dance"],"v":"GftlBD-Apu8","h":79.0,"p":95,"d":270,"m":[99,78,78,77,76,75,74,71,65,64,58,56,50,48,45,43,41,40,40,40,40,37,36,34,35,34,33,32,30,30,29,29,29,30,28,26,24,24,24,23,21,20,19,19,20,19,18,13,8,2]},{"t":"Lollypop Lagelu","a":"Pawan Singh","l":"bh","y":2008,"e":9,"b":120,"g":["dance"],"v":"Gr8G_ldltDE","h":31.7,"p":95,"d":337,"m":[99,68,64,65,72,80,82,80,78,74,67,63,62,63,61,58,56,57,59,64,66,66,66,61,58,58,55,53,55,57,62,65,65,61,55,50,46,43,41,41,43,45,44,43,43,34,29,24,14,4]}];
+const LANG_GROUP = {hi:'hi',pa:'pa',mr:'mr',ta:'south',te:'south',ml:'south',en:'en',gu:'gu',hr:'hr',bh:'hr'};
+const LANGS = [
+  ['hi','Hindi'],['pa','Punjabi'],['mr','Marathi'],['south','Tamil · Telugu · Malayalam'],
+  ['en','English'],['gu','Gujarati · Garba'],['hr','Haryanvi · Bhojpuri']];
+const LANG_NAME = Object.fromEntries(LANGS);
+const LIB = RAW.map((r,i)=>({
+  id:i, t:r.t, a:r.a, main:r.a.split(',')[0].trim(), artists:r.a.split(',').map(s=>s.trim()),
+  l:LANG_GROUP[r.l]||r.l, y:r.y, e:r.e, b:r.b, g:r.g, v:r.v, h:r.h, p:r.p, d:r.d, m:r.m
+}));
+// garba-tagged Hindi film songs also belong to the Gujarati/Garba language pick
+LIB.forEach(s=>{ s.groups = new Set([s.l]); if(s.g.includes('garba')) s.groups.add('gu'); });
+
+const OCC = {
+  house:   {n:'House party',  s:'Friends, my place', boost:{dance:.6,singalong:.6,'retro-remix':.4,bhangra:.3}, langs:['hi','pa','en']},
+  wedding: {n:'Wedding · Sangeet', s:'Family + dance floor', boost:{wedding:1.7,bhangra:1.1,singalong:.8,'retro-remix':.4}, langs:['hi','pa']},
+  diwali:  {n:'Diwali party', s:'Bangers + throwbacks', boost:{dance:.7,singalong:.9,'retro-remix':.7,retro:.5,bhangra:.4,festive:.5}, langs:['hi','pa']},
+  navratri:{n:'Navratri · Garba', s:'Dandiya all night', boost:{garba:3.2,festive:1.2,wedding:.3}, langs:['gu','hi']},
+  ganpati: {n:'Ganpati', s:'Dhol, Marathi, festive', boost:{ganpati:3,festive:1.4,lavani:.6,singalong:.5}, langs:['mr','hi']},
+  club:    {n:'Club · Gig', s:'Peak-time energy', boost:{edm:.9,hiphop:.7,dance:.7,bhangra:.5,mass:.6,kuthu:.6}, langs:['hi','pa','en']},
+  chill:   {n:'Chill hangout', s:'Talk over it', boost:{romantic:1.2,chill:1.4,sufi:.9,pop:.5,lavani:.2}, langs:['hi','pa','en'], chill:true}
+};
+const CROWD = {small:{n:'Under 10',s:'Close friends'}, mid:{n:'10–40',s:'A proper party'}, big:{n:'40+',s:'Full room'}};
+const ERA   = {new:{n:'Latest',s:'2018 onwards'}, mix:{n:'Mix it',s:'New + classics'}, old:{n:'Throwback',s:'90s–2000s gold'}};
+const LENS  = {30:'30 min',60:'1 hr',120:'2 hrs',180:'3 hrs'};
+const STARTS= {warm:{n:'Guests arriving',s:'Build up slowly'}, peak:{n:'Already going',s:'Start hot'}};
+
+/* =====================  STORAGE  ===================== */
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+let TASTE = store.get('hookd.taste',{song:{},artist:{},tag:{},hook:{}});
+const saveTaste = ()=>store.set('hookd.taste',TASTE);
+const bump = (map,k,d,lim=4)=>{ map[k]=Math.max(-lim,Math.min(lim,(map[k]||0)+d)); };
+
+/* =====================  SETUP UI  ===================== */
+let CFG = store.get('hookd.cfg',{occ:'house',langs:['hi','pa','en'],crowd:'mid',era:'mix',vibe:4,len:120,start:'warm'});
+const $ = s=>document.querySelector(s);
+function chipGroup(el,opts,isOn,onPick){
+  el.innerHTML='';
+  for(const [k,o] of opts){
+    const b=document.createElement('button'); b.className='chip'+(isOn(k)?' on':'');
+    b.innerHTML = typeof o==='string'? o : `${o.n}<small>${o.s}</small>`;
+    b.onclick=()=>{onPick(k); renderSetup();};
+    el.appendChild(b);
+  }
+}
+function renderSetup(){
+  chipGroup($('#occ'),Object.entries(OCC),k=>CFG.occ===k,k=>{CFG.occ=k; CFG.langs=[...OCC[k].langs];});
+  chipGroup($('#langs'),LANGS,k=>CFG.langs.includes(k),k=>{
+    CFG.langs = CFG.langs.includes(k)? CFG.langs.filter(x=>x!==k) : [...CFG.langs,k];
+  });
+  chipGroup($('#crowd'),Object.entries(CROWD),k=>CFG.crowd===k,k=>CFG.crowd=k);
+  chipGroup($('#era'),Object.entries(ERA),k=>CFG.era===k,k=>CFG.era=k);
+  chipGroup($('#len'),Object.entries(LENS),k=>CFG.len==k,k=>CFG.len=+k);
+  chipGroup($('#startAt'),Object.entries(STARTS),k=>CFG.start===k,k=>CFG.start=k);
+  $('#vibe').value=CFG.vibe;
+  const pool = LIB.filter(s=>CFG.langs.some(l=>s.groups.has(l)));
+  $('#arcTitle').textContent = `${LENS[CFG.len]} · ${CFG.start==='warm'?'build to peak':'start hot'}`;
+  $('#arcDesc').textContent = OCC[CFG.occ].chill
+    ? 'A low, easy curve. Nothing too loud, with a few singalongs to keep the room warm.'
+    : CFG.start==='warm'
+      ? 'Easy tracks while people arrive, a climb to the first peak, a singalong breather, then a second peak'+(CFG.len>=120?' and a slow wind-down.':'.')
+      : 'Straight into high energy, one short breather so the room can breathe, then peak to the end.';
+  drawArc($('#arcPrev'),CFG,[],null);
+  $('#stats').innerHTML = `<div><b>${pool.length}</b>songs in your pick</div><div><b>${pool.filter(s=>s.m).length}</b>with replay-peak hooks</div><div><b>${Object.keys(TASTE.song).length}</b>songs learned</div>`;
+  $('#go').disabled = !pool.length; $('#go').style.opacity = pool.length?1:.4;
+  store.set('hookd.cfg',CFG);
+}
+$('#vibe').oninput=e=>{CFG.vibe=+e.target.value; renderSetup();};
+
+/* =====================  ENERGY ARC  ===================== */
+const KF = {
+  warm:[[0,.12],[.12,.32],[.3,.78],[.45,1],[.56,1],[.62,.62],[.68,.68],[.76,1],[.9,1],[1,.97]],
+  peak:[[0,.8],[.08,.95],[.4,1],[.5,1],[.56,.66],[.62,.75],[.7,1],[1,1]]
+};
+const smooth = t=>t*t*(3-2*t);
+function shape(p,cfg){
+  const k = KF[cfg.start]||KF.warm; p=Math.max(0,Math.min(1,p));
+  for(let i=1;i<k.length;i++) if(p<=k[i][0]){
+    const [p0,v0]=k[i-1],[p1,v1]=k[i]; let v = v0+(v1-v0)*smooth((p-p0)/(p1-p0));
+    if(cfg.len>=120 && p>.9) v -= (p-.9)/.1*.38;   // long nights wind down at the end
+    return v;
+  }
+  return k[k.length-1][1];
+}
+function targetEnergy(p,cfg,bias=0){
+  const v=(cfg.vibe-1)/4; let lo,hi;
+  if(OCC[cfg.occ].chill){ lo=2.2; hi=5.2+v*1.5; }
+  else { lo=3+v*2.5; hi=7.2+v*2.8; }
+  if(cfg.crowd==='small') hi-=.6; if(cfg.crowd==='big') {hi+=.4; lo+=.3;}
+  return Math.max(1,Math.min(10, lo+(hi-lo)*shape(p,cfg)+bias));
+}
+function phaseName(p,cfg){
+  if(OCC[cfg.occ].chill) return 'Easy listening';
+  const s=shape(p,cfg);
+  if(cfg.start==='warm'&&p<.25) return 'Warm-up';
+  if(s<.72) return p>.85?'Wind-down':'Breather';
+  if(s>.95) return 'Peak';
+  return 'Building';
+}
+function drawArc(svg,cfg,dots,nowP){
+  const W=400,H=150,pad=12; let d='',area='';
+  for(let i=0;i<=80;i++){
+    const p=i/80, e=targetEnergy(p,cfg); const x=pad+p*(W-2*pad), y=H-pad-(e/10)*(H-2*pad);
+    d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+  }
+  area = d+`L${W-pad} ${H-pad}L${pad} ${H-pad}Z`;
+  let g='';
+  for(const [p,e] of dots){ const x=pad+Math.min(1,p)*(W-2*pad), y=H-pad-(e/10)*(H-2*pad); g+=`<circle cx="${x}" cy="${y}" r="3.2" fill="#c6ff3d"/>`; }
+  let now='';
+  if(nowP!=null){ const x=pad+Math.min(1,nowP)*(W-2*pad); now=`<line x1="${x}" x2="${x}" y1="${pad}" y2="${H-pad}" stroke="#fff" stroke-width="1.5" stroke-dasharray="3 3"/>`; }
+  const marks=[0,.25,.5,.75,1].map(p=>`<text x="${pad+p*(W-2*pad)}" y="${H-1}" fill="#6d6688" font-size="9" text-anchor="${p==0?'start':p==1?'end':'middle'}">${fmtMin(p*cfg.len)}</text>`).join('');
+  svg.innerHTML=`<defs><linearGradient id="ga${svg.id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff3d6e" stop-opacity=".45"/><stop offset="1" stop-color="#3de0ff" stop-opacity=".02"/></linearGradient><linearGradient id="gl${svg.id}" x1="0" x2="1"><stop offset="0" stop-color="#3de0ff"/><stop offset=".5" stop-color="#ff3d6e"/><stop offset="1" stop-color="#ffb23d"/></linearGradient></defs>
+  <path d="${area}" fill="url(#ga${svg.id})"/><path d="${d}" fill="none" stroke="url(#gl${svg.id})" stroke-width="3" stroke-linecap="round"/>${now}${g}${marks}`;
+}
+const fmtMin=m=>m>=60?`${Math.floor(m/60)}h${Math.round(m%60)?String(Math.round(m%60)).padStart(2,'0'):''}`:`${Math.round(m)}m`;
+const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+
+/* =====================  RECOMMENDER  ===================== */
+const XF = 5;                        // crossfade seconds
+const hookOf = s => TASTE.hook[s.v] ?? s.h;
+const segLen = (s,full)=> full ? Math.max(30,s.d-hookOf(s)-1) : s.p;
+function bpmDist(a,b){ return Math.min(Math.abs(a-b),Math.abs(a-2*b),Math.abs(2*a-b)); }
+
+function scoreSong(s,ctx){
+  if(ctx.used.has(s.id)) return null;
+  if(!CFG.langs.some(l=>s.groups.has(l))) return null;
+  if((TASTE.song[s.id]||0)<=-3.5) return null;                 // learned "never again"
+  const hist=ctx.hist, prev=hist[hist.length-1];
+  // artist spacing: never within 3, soft within 8
+  for(let k=1;k<=Math.min(8,hist.length);k++){
+    const h=hist[hist.length-k];
+    if(h.artists.some(a=>s.artists.includes(a))){ if(k<=3) return null; ctx._artistPen=(9-k)*.4; break; }
+  }
+  let sc=0; const why=[];
+  const de=s.e-ctx.target; sc -= Math.abs(de)*1.35;
+  if(ctx.target>=7.2 && s.e<=4) sc-=3;                          // no sleepers at peak
+  if(prev){
+    const bd=bpmDist(prev.b,s.b); sc -= Math.min(bd,40)/13;
+    if(bd<=6) why.push(['','tempo '+prev.b+'→'+s.b]);
+    if(s.e>prev.e+1) why.push(['e','energy ↑']); else if(s.e<prev.e-1) why.push(['e','energy ↓']);
+  }
+  const ob=OCC[CFG.occ].boost; let tb=0, tbest='';
+  for(const t of s.g){ if(ob[t]>tb){tb=ob[t]; tbest=t;} sc+=ob[t]||0; }
+  if(tb>=1) why.push(['',({wedding:'wedding staple',bhangra:'bhangra',garba:'garba',ganpati:'Ganpati',festive:'festive',singalong:'singalong',chill:'easy',romantic:'romantic',edm:'drop',kuthu:'kuthu',mass:'mass'})[tbest]||tbest]);
+  if(ctx.big && s.g.includes('singalong')) sc+=.5;
+  // era
+  if(CFG.era==='new'){ sc += s.y>=2018?.8:(s.y<2008?-1:0); }
+  if(CFG.era==='old'){ sc += s.y<2012?1.1:(s.y>=2020?-.6:0); if(s.y<2005) why.push(['','throwback']); }
+  if(CFG.era==='mix' && s.y<2005) why.push(['','throwback']);
+  // language flow
+  if(CFG.langs.length>1){
+    const last=hist.slice(-5).map(h=>h.l); const same=last.filter(l=>l===s.l).length;
+    sc -= same*.38;
+    if(prev && prev.l!==s.l && !hist.slice(-6).some(h=>h.l===s.l)){ sc+=.5; why.push(['',LANG_NAME[s.l]?.split(' ')[0]+' switch']); }
+  }
+  // tag variety
+  const lastTags=hist.slice(-3).map(h=>h.g[0]); if(lastTags.length===3 && lastTags.every(t=>t===s.g[0])) sc-=.6;
+  // learned taste
+  const ts=TASTE.song[s.id]||0, ta=TASTE.artist[s.main]||0;
+  const tt=s.g.reduce((a,t)=>a+(TASTE.tag[t]||0),0)/s.g.length;
+  sc += ts*.9 + ta*.55 + tt*.4;
+  if(ts>=1||ta>=1.2) why.push(['e','you loved '+(ts>=1?'this':s.main.split(' ')[0])]);
+  if(ctx._artistPen){ sc-=ctx._artistPen; ctx._artistPen=0; }
+  if(ctx.pinnedNear) sc-=0;
+  return {s,sc,why:why.slice(0,3)};
+}
+function pickNext(ctx){
+  const scored=[]; for(const s of LIB){ const r=scoreSong(s,ctx); if(r) scored.push(r); }
+  if(!scored.length) return null;
+  scored.sort((a,b)=>b.sc-a.sc);
+  const top=scored.slice(0,6), T=.55, mx=top[0].sc;
+  const w=top.map(r=>Math.exp((r.sc-mx)/T)); let x=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<top.length;i++){ x-=w[i]; if(x<=0) return top[i]; }
+  return top[0];
+}
+
+/* =====================  SESSION  ===================== */
+let S=null;
+function newSession(){
+  S={ total:CFG.len*60, elapsed:0, bias:0, biasUntil:0, hist:[], used:new Set(), played:[], queue:[],
+      cur:null, curFull:false, curStartWall:0, playerIdx:0, preloaded:false, fading:false, paused:false, started:false, ended:false };
+  planQueue(true);
+}
+function ctxAt(tOffset,hist,used){
+  const t=S.elapsed+tOffset, p=t/S.total;
+  const bias = t<S.biasUntil ? S.bias : 0;
+  return {target:targetEnergy(p,CFG,bias), p, hist, used, big:CFG.crowd==='big'};
+}
+function planQueue(full){
+  // keep pinned requests and (if preloading) the first item; rebuild the rest
+  const keep=[]; const lock = S.preloaded||S.fading ? 1 : 0;
+  S.queue.forEach((q,i)=>{ if(i<lock || q.pinned) keep.push(q); });
+  const hist=[...S.hist], used=new Set(S.used); keep.forEach(q=>{used.add(q.s.id);});
+  let t = S.cur ? Math.max(0, curEnd()-curPos()) : 0;
+  const out=[];
+  // walk forward, inserting kept items at their positions
+  let ki=0; const N=7;
+  while(out.length<N){
+    let item;
+    if(ki<keep.length && (keep[ki].pinned || out.length<lock)){ item=keep[ki++]; }
+    else { const r=pickNext(ctxAt(t,hist,used)); if(!r) break; item={s:r.s,why:r.why,sc:r.sc}; used.add(r.s.id); }
+    out.push(item); hist.push(item.s); t+=segLen(item.s,false)-XF;
+  }
+  S.queue=out; renderQueue();
+}
+
+/* =====================  YOUTUBE ENGINE  ===================== */
+let P=[null,null], ready=[false,false], apiOk=false;
+window.onYouTubeIframeAPIReady=()=>{ apiOk=true; };
+function loadYT(){
+  if(window.YT&&YT.Player){apiOk=true;return;}
+  const s=document.createElement('script'); s.src='https://www.youtube.com/iframe_api';
+  s.onerror=()=>{$('#startMsg').textContent="Couldn't reach YouTube. Check your connection, or open this page from a web address rather than a local file.";};
+  document.head.appendChild(s);
+}
+function makePlayers(cb){
+  let n=0; const done=()=>{ if(++n===2) cb(); };
+  ['pA','pB'].forEach((id,i)=>{
+    P[i]=new YT.Player(id,{ width:'100%', height:'100%',
+      playerVars:{controls:0,disablekb:1,rel:0,playsinline:1,iv_load_policy:3,modestbranding:1,fs:0,origin:location.origin},
+      events:{ onReady:()=>{ready[i]=true; done();}, onError:e=>onYTError(i,e), onStateChange:e=>onState(i,e) }});
+  });
+}
+function waitApi(){
+  if(apiOk && window.YT && YT.Player){ makePlayers(()=>{ $('#startMsg').textContent='Tap to start. Browsers need one tap before they can play sound.'; $('#startBtn').disabled=false; }); }
+  else setTimeout(waitApi,200);
+}
+const other=i=>1-i;
+function curPos(){ try{ return P[S.playerIdx].getCurrentTime()||0; }catch(e){ return 0; } }
+function curEnd(){ return S.curFull ? S.cur.d-1.2 : hookOf(S.cur)+segLen(S.cur,false); }
+
+function startTrack(item,idx,fadeIn){
+  S.cur=item.s; S.curWhy=item.why; S.curFull=false; S.playerIdx=idx; S.preloaded=false; S.trackWall=performance.now();
+  S.used.add(item.s.id); S.hist.push(item.s);
+  S.played.push({s:item.s,p:S.elapsed/S.total,skipped:false});
+  $('#npT').textContent=item.s.t; $('#npA').textContent=item.s.a+(item.s.y?` · ${item.s.y}`:'');
+  $('#bFull').classList.remove('on'); $('#bLike').classList.toggle('liked',(TASTE.song[item.s.id]||0)>=1);
+  setStatus('');
+  if(!fadeIn){
+    P[idx].unMute(); P[idx].setVolume(100);
+    P[idx].loadVideoById({videoId:item.s.v,startSeconds:hookOf(item.s)});
+    $('#ytA').style.opacity= idx===0?1:0; $('#ytB').style.opacity= idx===1?1:0;
+  }
+  renderPlayed();
+}
+function preloadNext(){
+  const nx=S.queue[0]; if(!nx) return;
+  const o=other(S.playerIdx); S.preloaded=true; S.preReady=false; S.preId=nx.s.v;
+  P[o].mute(); P[o].setVolume(0);
+  P[o].loadVideoById({videoId:nx.s.v,startSeconds:hookOf(nx.s)});
+}
+function onState(i,e){
+  if(!S) return;
+  const st=e.data;
+  // the preloading deck started playing: hold it on the hook until the crossfade
+  if(i===other(S.playerIdx) && S.preloaded && !S.fading && st===YT.PlayerState.PLAYING){
+    P[i].pauseVideo(); P[i].seekTo(hookOf(S.queue[0].s),true); S.preReady=true;
+  }
+  if(i===S.playerIdx && st===YT.PlayerState.ENDED && !S.fading){ crossfade(1.2); }
+}
+function onYTError(i,e){
+  if(!S) return;
+  const bad = i===S.playerIdx ? S.cur : S.queue[0]?.s;
+  if(bad){ bump(TASTE.song,bad.id,-5,5); saveTaste(); }
+  if(i===S.playerIdx){ setStatus("That video won't play here, so skipping it"); S.fading=false; advance(false,0); }
+  else { S.queue.shift(); S.preloaded=false; planQueue(); }
+}
+function crossfade(dur=XF){
+  if(S.fading) return;
+  const nx=S.queue[0]; if(!nx){ endParty(); return; }
+  const o=other(S.playerIdx), from=S.playerIdx;
+  if(!S.preloaded || S.preId!==nx.s.v){ advance(false,0); return; }
+  if(!S.preReady){
+    // next deck still buffering: ride the current track a bit longer
+    if(S.curFull || curPos() < S.cur.d-3){ if(!S.waitFade) setStatus('Next track is still loading, so riding this one a little longer'); S.waitFade=true; return; }
+    advance(false,0); return;
+  }
+  S.fading=true; S.waitFade=false;
+  P[o].unMute(); P[o].setVolume(0); P[o].playVideo();
+  const t0=performance.now(), elA=from===0?$('#ytA'):$('#ytB'), elB=from===0?$('#ytB'):$('#ytA');
+  elA.style.opacity=0; elB.style.opacity=1;
+  const step=()=>{
+    const k=Math.min(1,(performance.now()-t0)/(dur*1000));
+    try{ P[from].setVolume(Math.round(100*(1-k)*(1-k))); P[o].setVolume(Math.round(100*Math.sqrt(k))); }catch(e){}
+    if(k<1) requestAnimationFrame(step);
+    else { try{P[from].pauseVideo();}catch(e){} S.fading=false; }
+  };
+  requestAnimationFrame(step);
+  const item=S.queue.shift();
+  startTrack(item,o,true);
+  planQueue();
+}
+function advance(userSkip,fade){
+  const nx=S.queue[0]; if(!nx){ endParty(); return; }
+  if(fade && S.preloaded && S.preReady){ crossfade(fade); return; }
+  try{ P[S.playerIdx].pauseVideo(); }catch(e){}
+  const o=other(S.playerIdx); S.queue.shift();
+  startTrack(nx,o,false); planQueue();
+}
+let lastTick=performance.now();
+function tick(){
+  const now=performance.now(), dt=(now-lastTick)/1000; lastTick=now;
+  if(S && S.started && !S.paused && !S.ended){
+    S.elapsed+=dt;
+    const pos=curPos(), end=curEnd();
+    if(!S.preloaded && pos>=end-18 && pos>hookOf(S.cur)) preloadNext();
+    if(!S.fading && (pos>=end-XF || (S.waitFade && S.preReady))) crossfade();
+    if(S.elapsed>=S.total && !S.overtime){ S.overtime=true; toast('Set time is up. HOOKD keeps playing until you end the party'); }
+    $('#tpos').textContent=fmt(pos)+' / '+fmt(S.cur?S.cur.d:0);
+    $('#phase').textContent=phaseName(S.elapsed/S.total,CFG)+(S.elapsed<S.biasUntil?(S.bias>0?' · energy +':' · energy −'):'');
+    $('#clock').textContent=fmtMin(S.elapsed/60)+' / '+LENS[CFG.len];
+    drawCurve(pos);
+    if(Math.floor(now/1000)!==Math.floor((now-dt*1000)/1000)) drawArc($('#arcLive'),CFG,S.played.map(x=>[x.p,x.s.e]),S.elapsed/S.total);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* =====================  LEARNING  ===================== */
+function learnFromSkip(){
+  const listened=(performance.now()-S.trackWall)/1000; const s=S.cur;
+  const last=S.played[S.played.length-1]; if(last) last.skipped=true;
+  if(listened<20){
+    bump(TASTE.song,s.id,-1.2); bump(TASTE.artist,s.main,-.35);
+    s.g.forEach(t=>bump(TASTE.tag,t,-.12)); saveTaste();
+    return 'Skipped fast, so less like that tonight';
+  }
+  bump(TASTE.song,s.id,-.3); saveTaste(); return '';
+}
+function learnPlayedThrough(s){ bump(TASTE.song,s.id,.15); bump(TASTE.artist,s.main,.05); }
+
+/* =====================  RENDER  ===================== */
+function renderQueue(){
+  const el=$('#queue'); el.innerHTML='';
+  S.queue.slice(0,6).forEach((q,i)=>{
+    const d=document.createElement('div'); d.className='q-item';
+    d.innerHTML=`<div class="ebar" title="energy ${q.s.e}/10"><i style="height:${q.s.e*10}%"></i></div>
+      <div><div class="tt">${esc(q.s.t)}</div><div class="aa">${esc(q.s.a)}</div>
+      <div class="why">${q.pinned?'<span class="e">requested</span>':''}${(q.why||[]).map(([c,w])=>`<span class="${c}">${esc(w)}</span>`).join('')}</div></div>
+      <button class="x" title="Remove from queue">×</button>`;
+    d.querySelector('.x').onclick=()=>{
+      if(i===0&&S.preloaded){ S.preloaded=false; try{P[other(S.playerIdx)].stopVideo();}catch(e){} }
+      bump(TASTE.song,q.s.id,-.6); saveTaste(); S.used.add(q.s.id); S.queue.splice(i,1); planQueue();
+    };
+    el.appendChild(d);
+  });
+}
+function renderPlayed(){
+  $('#played').innerHTML=S.played.slice().reverse().slice(0,40).map(x=>`<div><b>${esc(x.s.t)}</b> · ${esc(x.s.main)}${x.skipped?' · <span style="color:#ff3d6e">skipped</span>':''}</div>`).join('');
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let lastCurveKey='';
+function drawCurve(pos){
+  const c=$('#curve'), s=S.cur; if(!s) return;
+  const dpr=window.devicePixelRatio||1, W=c.clientWidth, H=c.clientHeight;
+  if(c.width!==W*dpr){ c.width=W*dpr; c.height=H*dpr; }
+  const x=c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
+  const m=s.m||Array.from({length:50},(_,i)=>40+30*Math.sin(i/4));
+  const h=hookOf(s), e=S.curFull?s.d:h+segLen(s,false);
+  // hook window
+  x.fillStyle='rgba(255,61,110,.14)'; x.fillRect(h/s.d*W,0,(Math.min(e,s.d)-h)/s.d*W,H);
+  // curve
+  x.beginPath();
+  m.forEach((v,i)=>{ const px=i/(m.length-1)*W, py=H-6-(v/99)*(H-14); i?x.lineTo(px,py):x.moveTo(px,py); });
+  x.lineTo(W,H); x.lineTo(0,H); x.closePath();
+  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(61,224,255,.55)'); g.addColorStop(1,'rgba(61,224,255,.03)');
+  x.fillStyle=g; x.fill();
+  // played part
+  x.save(); x.beginPath(); x.rect(0,0,pos/s.d*W,H); x.clip();
+  x.fillStyle='rgba(198,255,61,.35)'; x.fill(); x.restore();
+  // hook marker
+  x.fillStyle='#ff3d6e'; x.fillRect(h/s.d*W-1,0,2,H);
+  x.font='600 10px Space Grotesk'; x.fillText('HOOK '+fmt(h),Math.min(W-60,h/s.d*W+4),12);
+  // playhead
+  x.fillStyle='#fff'; x.fillRect(pos/s.d*W-1,0,2,H);
+  if(!s.m){ x.fillStyle='#9a93b3'; x.fillText('no replay data, so this is an estimate',8,H-8); }
+}
+function setStatus(t){ $('#status').textContent=t; if(t) clearTimeout(setStatus._t), setStatus._t=setTimeout(()=>$('#status').textContent='',6000); }
+function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),2600); }
+
+/* =====================  CONTROLS  ===================== */
+$('#go').onclick=()=>{
+  newSession(); $('#setup').style.display='none'; $('#player').style.display='block';
+  window.scrollTo(0,0); drawArc($('#arcLive'),CFG,[],0);
+  loadYT(); waitApi();
+};
+$('#startBtn').onclick=()=>{
+  $('#startOver').style.display='none'; S.started=true; lastTick=performance.now();
+  const first=S.queue.shift(); startTrack(first,0,false); planQueue();
+};
+$('#bSkip').onclick=()=>{
+  if(!S?.cur) return; const msg=learnFromSkip(); if(msg) toast(msg);
+  planQueue();
+  if(S.preloaded&&S.preReady) crossfade(1.5); else advance(true,0);
+};
+$('#bPause').onclick=()=>{
+  if(!S?.cur) return; S.paused=!S.paused;
+  try{ S.paused?P[S.playerIdx].pauseVideo():P[S.playerIdx].playVideo(); }catch(e){}
+  $('#bPause').innerHTML=S.paused?'<span>▶</span>Play':'<span>❚❚</span>Pause';
+};
+$('#bFull').onclick=()=>{
+  if(!S?.cur) return; S.curFull=!S.curFull; $('#bFull').classList.toggle('on',S.curFull);
+  if(S.curFull){ bump(TASTE.song,S.cur.id,.6); bump(TASTE.artist,S.cur.main,.2); saveTaste(); toast('Playing it full. Noted that the room likes it'); }
+  if(S.preloaded&&!S.fading){ S.preloaded=false; try{P[other(S.playerIdx)].stopVideo();}catch(e){} }
+};
+$('#bLike').onclick=()=>{
+  if(!S?.cur) return; bump(TASTE.song,S.cur.id,1.5); bump(TASTE.artist,S.cur.main,.6); S.cur.g.forEach(t=>bump(TASTE.tag,t,.2));
+  saveTaste(); $('#bLike').classList.add('liked'); toast('More like this coming up'); planQueue();
+};
+function retune(d){
+  if(!S) return; S.bias=d; S.biasUntil=S.elapsed+15*60;
+  if(S.preloaded&&!S.fading&&!S.queue[0]?.pinned){ S.preloaded=false; try{P[other(S.playerIdx)].stopVideo();}catch(e){} }
+  planQueue(); toast(d>0?'Pushing the energy up for the next 15 minutes':'Easing off for the next 15 minutes');
+}
+$('#bUp').onclick=()=>retune(1.6); $('#bDown').onclick=()=>retune(-1.8);
+$('#bReshuffle').onclick=()=>{ if(S.preloaded&&!S.fading){S.preloaded=false; try{P[other(S.playerIdx)].stopVideo();}catch(e){}} S.queue=S.queue.filter(q=>q.pinned); planQueue(); };
+$('#bEnd').onclick=endParty;
+function endParty(){
+  if(!S) return;
+  S.played.forEach(x=>{ if(!x.skipped) learnPlayedThrough(x.s); }); saveTaste();
+  S.ended=true; try{P[0].stopVideo();P[1].stopVideo();}catch(e){}
+  $('#player').style.display='none'; $('#setup').style.display='block';
+  $('#startOver').style.display='flex'; $('#startBtn').disabled=!(ready[0]&&ready[1]);
+  toast(`Party over: ${S.played.length} tracks played. HOOKD learned from them`);
+  renderSetup();
+}
+// hook editing on the replay curve
+(function(){
+  const c=$('#curve'); let drag=false;
+  const at=e=>{ const r=c.getBoundingClientRect(); return Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*S.cur.d; };
+  c.addEventListener('pointerdown',e=>{ if(!S?.cur) return; drag=true; c.setPointerCapture(e.pointerId); });
+  c.addEventListener('pointerup',e=>{
+    if(!drag||!S?.cur) return; drag=false; const t=Math.round(at(e));
+    TASTE.hook[S.cur.v]=Math.max(0,t-1); saveTaste();
+    try{ P[S.playerIdx].seekTo(t,true); }catch(err){}
+    toast('Hook saved at '+fmt(t)+'. HOOKD will start here from now on');
+  });
+})();
+// request / search
+$('#bSearch').onclick=()=>{ $('#sheet').classList.add('open'); $('#sq').value=''; renderResults(''); setTimeout(()=>$('#sq').focus(),50); };
+$('#sheet').onclick=e=>{ if(e.target.id==='sheet') $('#sheet').classList.remove('open'); };
+$('#sq').oninput=e=>renderResults(e.target.value);
+function renderResults(q){
+  q=q.trim().toLowerCase();
+  const list=LIB.filter(s=>!S.used.has(s.id) && (!q || (s.t+' '+s.a).toLowerCase().includes(q))).slice(0,40);
+  $('#results').innerHTML=list.map(s=>`<button class="res" data-id="${s.id}"><span>${esc(s.t)}<small>${esc(s.a)} · ${LANG_NAME[s.l]?.split(' ')[0]||''} · energy ${s.e}</small></span><em>PLAY NEXT</em></button>`).join('')
+    || '<p style="color:#9a93b3;padding:14px 4px">Not in the library yet. The full version would search all of YouTube for it.</p>';
+  $('#results').querySelectorAll('.res').forEach(b=>b.onclick=()=>{
+    const s=LIB[+b.dataset.id]; const pos=(S.preloaded||S.fading)?1:0;
+    S.queue=S.queue.filter(q=>q.s.id!==s.id); S.queue.splice(pos,0,{s,why:[],pinned:true});
+    S.used.add(s.id); planQueue(); $('#sheet').classList.remove('open'); toast(`"${s.t}" is up next`);
+  });
+}
+$('#resetTaste').onclick=()=>{ TASTE={song:{},artist:{},tag:{},hook:{}}; saveTaste(); renderSetup(); toast('Taste reset on this device'); };
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||!S||!S.started||S.ended) return;
+  if(e.code==='Space'){e.preventDefault();$('#bPause').click();}
+  if(e.code==='ArrowRight')$('#bSkip').click();
+  if(e.code==='ArrowUp')$('#bUp').click();
+  if(e.code==='ArrowDown')$('#bDown').click();
+});
+
+renderSetup(); requestAnimationFrame(tick);
+// expose for tests
+window.HOOKD={LIB,CFG:()=>CFG,setCfg:c=>{CFG=c},newSession,planQueue,targetEnergy,shape,get S(){return S}};
+</script>
+</body>
+</html>
